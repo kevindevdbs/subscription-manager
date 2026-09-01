@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SubscriptionManager.Api/SubscriptionManager.Api.csproj" />
+    <Project Path="src/SubscriptionManager.Application/SubscriptionManager.Application.csproj" />
+    <Project Path="src/SubscriptionManager.Domain/SubscriptionManager.Domain.csproj" />
+    <Project Path="src/SubscriptionManager.Infrastructure/SubscriptionManager.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>
