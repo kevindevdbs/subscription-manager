@@ -7,7 +7,7 @@ public record Money
     public Money(decimal amount)
     {
         if (amount < 0)
-            throw new ArgumentException("Amount cannot be negative", nameof(amount));
+            throw new ArgumentException("O valor não pode ser negativo.", nameof(amount));
         Amount = amount;
     }
 
