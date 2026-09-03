@@ -7,6 +7,6 @@ public class InvoiceBuilder
 {
     public static Invoice Build()
     {
-        return new Invoice(Guid.NewGuid(), new Money(100), DateTime.Now.AddDays(30));
+        return new Invoice(Guid.NewGuid(), new Money(100), DateTime.Now.AddDays(30), DateTime.Now);
     }
 }

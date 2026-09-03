@@ -1,6 +1,8 @@
 ﻿using SubscriptionManager.Domain.Enums;
 using SubscriptionManager.Domain.ValueObjects;
 
+using SubscriptionManager.Domain.Resources;
+
 namespace SubscriptionManager.Domain.Entities;
 
 public class Invoice
@@ -10,25 +12,26 @@ public class Invoice
     public Money Amount { get; private set; } = null!;
     public DateTime DueDate { get; private set; }
     public DateTime? PaidAt { get; private set; }
+    public DateTime ReferenceMonth { get; private set; }
     public InvoiceStatus Status { get; private set; } = InvoiceStatus.Pending;
 
     private Invoice() { }
 
-    public Invoice(Guid contractId, Money amount, DateTime dueDate)
+    public Invoice(Guid contractId, Money amount, DateTime dueDate, DateTime referenceMonth)
     {
         if (contractId == Guid.Empty)
         {
-            throw new ArgumentException("O identificador do contrato não pode ser vazio.", nameof(contractId));
+            throw new ArgumentException(DomainMessages.InvoiceContractIdRequired, nameof(contractId));
         }
 
         if (amount == null)
         {
-            throw new ArgumentNullException(nameof(amount), "O valor da fatura não pode ser nulo.");
+            throw new ArgumentNullException(nameof(amount), DomainMessages.InvoiceAmountRequired);
         }
 
         if (amount.Amount <= 0)
         {
-            throw new ArgumentException("O valor da fatura não pode ser menor ou igual a zero.", nameof(amount));
+            throw new ArgumentException(DomainMessages.InvoiceAmountMustBeGreaterThanZero, nameof(amount));
         }
 
         Id = Guid.NewGuid();
@@ -36,6 +39,7 @@ public class Invoice
         ContractId = contractId;
         Amount = amount;
         DueDate = dueDate;
+        ReferenceMonth = new DateTime(referenceMonth.Year, referenceMonth.Month, 1);
     }
 
 
@@ -44,7 +48,7 @@ public class Invoice
 
         if (this.Status != InvoiceStatus.Pending && this.Status != InvoiceStatus.Overdue)
         {
-            throw new InvalidOperationException("A fatura não está em um estado válido para ser paga.");
+            throw new InvalidOperationException(DomainMessages.InvoiceCannotBePaid);
         }
 
         PaidAt = paidAt;
@@ -56,7 +60,7 @@ public class Invoice
     {
         if (this.Status != InvoiceStatus.Pending)
         {
-            throw new InvalidOperationException("A fatura não está em um estado válido para ser marcada como vencida.");
+            throw new InvalidOperationException(DomainMessages.InvoiceCannotBeMarkedAsOverdue);
         }
 
         if (referenceDate > this.DueDate)
@@ -69,7 +73,7 @@ public class Invoice
     {
         if (this.Status != InvoiceStatus.Paid)
         {
-            throw new InvalidOperationException("A fatura não está em um estado válido para ser reembolsada.");
+            throw new InvalidOperationException(DomainMessages.InvoiceCannotBeRefunded);
         }
         this.Status = InvoiceStatus.Refunded;
     }
@@ -78,7 +82,7 @@ public class Invoice
     {
         if (this.Status != InvoiceStatus.Pending && this.Status != InvoiceStatus.Overdue)
         {
-            throw new InvalidOperationException("A fatura não está em um estado válido para ser cancelada.");
+            throw new InvalidOperationException(DomainMessages.InvoiceCannotBeCancelled);
         }
         this.Status = InvoiceStatus.Cancelled;
     }

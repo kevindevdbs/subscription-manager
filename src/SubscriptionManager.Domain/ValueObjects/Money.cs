@@ -1,4 +1,6 @@
-﻿namespace SubscriptionManager.Domain.ValueObjects;
+﻿using SubscriptionManager.Domain.Resources;
+
+namespace SubscriptionManager.Domain.ValueObjects;
 
 public record Money
 {
@@ -7,12 +9,15 @@ public record Money
     public Money(decimal amount)
     {
         if (amount < 0)
-            throw new ArgumentException("O valor não pode ser negativo.", nameof(amount));
+            throw new ArgumentException(DomainMessages.MoneyAmountCannotBeNegative, nameof(amount));
         Amount = amount;
     }
 
     public Money Add(Money money)
     {
+        if (money == null)
+            throw new ArgumentNullException(nameof(money), DomainMessages.MoneyAmountRequired);
+
         decimal amountSum = Amount + money.Amount;
         return new Money(amountSum);
     }
