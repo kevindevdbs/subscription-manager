@@ -1,6 +1,5 @@
 ﻿using SubscriptionManager.Domain.Enums;
 
-using SubscriptionManager.Domain.Resources;
 
 namespace SubscriptionManager.Domain.Entities;
 
@@ -23,10 +22,10 @@ public class Contract
     {
 
         if (customerId == Guid.Empty)
-            throw new ArgumentException(DomainMessages.ContractCustomerIdRequired, nameof(customerId));
+            throw new ArgumentException("Customer ID não pode ser vazio", nameof(customerId));
 
         if (planId == Guid.Empty)
-            throw new ArgumentException(DomainMessages.ContractPlanIdRequired, nameof(planId));
+            throw new ArgumentException("Plan ID não pode ser vazio", nameof(planId));
 
         Id = Guid.NewGuid();
         CustomerId = customerId;
@@ -39,7 +38,7 @@ public class Contract
     {
         if (Status != ContractStatus.Active)
         {
-            throw new InvalidOperationException(DomainMessages.ContractCannotBeSuspended);
+            throw new InvalidOperationException("O contrato não está ativo e não pode ser suspenso.");
         }
         Status = ContractStatus.Suspended;
     }
@@ -48,7 +47,7 @@ public class Contract
     {
         if (Status == ContractStatus.Cancelled)
         {
-            throw new InvalidOperationException(DomainMessages.ContractAlreadyCancelled);
+            throw new InvalidOperationException("O contrato já está cancelado.");
         }
         Status = ContractStatus.Cancelled;
         EndDate = endDate;
@@ -58,7 +57,7 @@ public class Contract
     {
         if (Status != ContractStatus.Suspended)
         {
-            throw new InvalidOperationException(DomainMessages.ContractCannotBeReactivated);
+            throw new InvalidOperationException("O contrato não está suspenso e não pode ser ativado.");
         }
         Status = ContractStatus.Active;
     }

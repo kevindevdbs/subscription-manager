@@ -1,6 +1,5 @@
 ﻿using SubscriptionManager.Domain.ValueObjects;
 
-using SubscriptionManager.Domain.Resources;
 
 namespace SubscriptionManager.Domain.Entities;
 
@@ -20,17 +19,17 @@ public class Plan
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException(DomainMessages.NameRequired, nameof(name));
+            throw new ArgumentException("O nome não pode ser nulo ou conter apenas espaços em branco.", nameof(name));
         }
 
         if (monthlyPrice == null)
         {
-            throw new ArgumentNullException(nameof(monthlyPrice));
+            throw new ArgumentNullException(nameof(monthlyPrice), "O preço mensal não pode ser nulo.");
         }
 
         if (monthlyPrice.Amount <= 0)
         {
-            throw new ArgumentException(DomainMessages.PlanMonthlyPriceMustBeGreaterThanZero, nameof(monthlyPrice));
+            throw new ArgumentException("O preço mensal deve ser maior que zero.", nameof(monthlyPrice));
         }
 
         Id = Guid.NewGuid();
@@ -43,7 +42,7 @@ public class Plan
     {
         if (!IsActive)
         {
-            throw new InvalidOperationException(DomainMessages.PlanAlreadyInactive);
+            throw new InvalidOperationException("O plano já está desativado.");
         }
 
         IsActive = false;

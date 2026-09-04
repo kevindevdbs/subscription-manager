@@ -1,6 +1,4 @@
-﻿using SubscriptionManager.Domain.Resources;
-
-namespace SubscriptionManager.Domain.Entities;
+﻿namespace SubscriptionManager.Domain.Entities;
 
 public class Customer
 {
@@ -20,22 +18,22 @@ public class Customer
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException(DomainMessages.NameRequired, nameof(name));
+            throw new ArgumentException("O nome não pode ser nulo ou conter apenas espaços em branco.", nameof(name));
         }
 
         if (string.IsNullOrWhiteSpace(email))
         {
-            throw new ArgumentException(DomainMessages.EmailRequired, nameof(email));
+            throw new ArgumentException("O e-mail não pode ser nulo ou conter apenas espaços em branco.", nameof(email));
         }
 
         if (string.IsNullOrWhiteSpace(document))
         {
-            throw new ArgumentException(DomainMessages.DocumentRequired, nameof(document));
+            throw new ArgumentException("O documento não pode ser nulo ou conter apenas espaços em branco.", nameof(document));
         }
 
         if (!email.Contains("@"))
         {
-            throw new ArgumentException(DomainMessages.EmailMustContainAtSign, nameof(email));
+            throw new ArgumentException("O email deve conter o caractere '@'.", nameof(email));
         }
 
         Id = Guid.NewGuid();
