@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SubscriptionManager.Api.Filters;
 using SubscriptionManager.Application.UseCases.Contracts;
 using SubscriptionManager.Application.UseCases.Customers;
 using SubscriptionManager.Application.UseCases.Invoices;
@@ -11,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add<ExceptionFilter>());
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
