@@ -29,7 +29,15 @@ builder.Services.AddScoped<CreatePlanHandler>();
 builder.Services.AddScoped<CreateCustomerHandler>();
 builder.Services.AddScoped<GenerateMonthlyInvoicesHandler>();
 
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "SubscriptionManager.Api", Version = "v1" });
+});
+
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // Configure the HTTP request pipeline.
 
