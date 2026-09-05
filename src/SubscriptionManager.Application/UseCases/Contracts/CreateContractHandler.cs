@@ -1,4 +1,5 @@
-﻿using SubscriptionManager.Application.DTOs.Contracts;
+using SubscriptionManager.Application.DTOs.Contracts;
+using SubscriptionManager.Application.Validators;
 using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Exceptions;
 using SubscriptionManager.Domain.Repositories;
@@ -25,6 +26,8 @@ public class CreateContractHandler
 
     public async Task<ContractResponse> Handle(CreateContractRequest request)
     {
+        Validate(request);
+
         var existingCustomer = await _customerRepository.GetByIdAsync(request.CustomerId);
         if (existingCustomer == null)
         {
@@ -42,5 +45,19 @@ public class CreateContractHandler
         await _unitOfWork.SaveChangesAsync();
 
         return new ContractResponse(contract.Id, contract.CustomerId, contract.PlanId, contract.StartDate, contract.EndDate, contract.Status.ToString());
+    }
+
+    private static void Validate(CreateContractRequest request)
+    {
+        var validator = new CreateContractRequestValidator();
+
+        var result = validator.Validate(request);
+
+        if (result.IsValid == false)
+        {
+            var errorMessages = result.Errors.Select(error => error.ErrorMessage).ToList();
+
+            throw new ErrorOnValidationException(errorMessages);
+        }
     }
 }
