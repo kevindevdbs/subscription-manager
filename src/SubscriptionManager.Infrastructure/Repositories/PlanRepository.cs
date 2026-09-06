@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Repositories;
 using SubscriptionManager.Infrastructure.Data;
@@ -22,5 +22,10 @@ public class PlanRepository : IPlanRepository
     public async Task<Plan?> GetByIdAsync(Guid id)
     {
         return await _context.Plans.FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<bool> ExistsActiveWithNameAsync(string name)
+    {
+        return await _context.Plans.AnyAsync(p => p.Name == name && p.IsActive);
     }
 }
