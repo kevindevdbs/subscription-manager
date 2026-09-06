@@ -1,3 +1,4 @@
+using Shouldly;
 using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Enums;
 using SubscriptionManager.Domain.Tests.Builders;
@@ -11,19 +12,19 @@ public class ContractTests
     {
         var contract = ContractBuilder.Build();
 
-        Assert.Equal(ContractStatus.Active, contract.Status);
+        contract.Status.ShouldBe(ContractStatus.Active);
     }
 
     [Fact]
     public void Constructor_EmptyCustomerId_ThrowsArgumentException()
     {
-        Assert.Throws<ArgumentException>(() => new Contract(Guid.Empty, Guid.NewGuid(), DateTime.Now));
+        Should.Throw<ArgumentException>(() => new Contract(Guid.Empty, Guid.NewGuid(), DateTime.Now));
     }
 
     [Fact]
     public void Constructor_EmptyPlanId_ThrowsArgumentException()
     {
-        Assert.Throws<ArgumentException>(() => new Contract(Guid.NewGuid(), Guid.Empty, DateTime.Now));
+        Should.Throw<ArgumentException>(() => new Contract(Guid.NewGuid(), Guid.Empty, DateTime.Now));
     }
 
     [Fact]
@@ -33,7 +34,7 @@ public class ContractTests
 
         contract.Suspend();
 
-        Assert.Equal(ContractStatus.Suspended, contract.Status);
+        contract.Status.ShouldBe(ContractStatus.Suspended);
     }
 
     [Fact]
@@ -42,7 +43,7 @@ public class ContractTests
         var contract = ContractBuilder.Build();
         contract.Suspend();
 
-        Assert.Throws<InvalidOperationException>(() => contract.Suspend());
+        Should.Throw<InvalidOperationException>(() => contract.Suspend());
     }
 
     [Fact]
@@ -51,7 +52,7 @@ public class ContractTests
         var contract = ContractBuilder.Build();
         contract.Cancel(DateTime.Now);
 
-        Assert.Throws<InvalidOperationException>(() => contract.Suspend());
+        Should.Throw<InvalidOperationException>(() => contract.Suspend());
     }
 
     [Fact]
@@ -61,7 +62,7 @@ public class ContractTests
 
         contract.Cancel(DateTime.Now);
 
-        Assert.Equal(ContractStatus.Cancelled, contract.Status);
+        contract.Status.ShouldBe(ContractStatus.Cancelled);
     }
 
     [Fact]
@@ -72,7 +73,7 @@ public class ContractTests
 
         contract.Cancel(endDate);
 
-        Assert.Equal(endDate, contract.EndDate);
+        contract.EndDate.ShouldBe(endDate);
     }
 
     [Fact]
@@ -83,7 +84,7 @@ public class ContractTests
 
         contract.Cancel(DateTime.Now);
 
-        Assert.Equal(ContractStatus.Cancelled, contract.Status);
+        contract.Status.ShouldBe(ContractStatus.Cancelled);
     }
 
     [Fact]
@@ -92,7 +93,7 @@ public class ContractTests
         var contract = ContractBuilder.Build();
         contract.Cancel(DateTime.Now);
 
-        Assert.Throws<InvalidOperationException>(() => contract.Cancel(DateTime.Now));
+        Should.Throw<InvalidOperationException>(() => contract.Cancel(DateTime.Now));
     }
 
     [Fact]
@@ -103,7 +104,7 @@ public class ContractTests
 
         contract.Reactivate();
 
-        Assert.Equal(ContractStatus.Active, contract.Status);
+        contract.Status.ShouldBe(ContractStatus.Active);
     }
 
     [Fact]
@@ -111,7 +112,7 @@ public class ContractTests
     {
         var contract = ContractBuilder.Build();
 
-        Assert.Throws<InvalidOperationException>(() => contract.Reactivate());
+        Should.Throw<InvalidOperationException>(() => contract.Reactivate());
     }
 
     [Fact]
@@ -120,6 +121,6 @@ public class ContractTests
         var contract = ContractBuilder.Build();
         contract.Cancel(DateTime.Now);
 
-        Assert.Throws<InvalidOperationException>(() => contract.Reactivate());
+        Should.Throw<InvalidOperationException>(() => contract.Reactivate());
     }
 }
