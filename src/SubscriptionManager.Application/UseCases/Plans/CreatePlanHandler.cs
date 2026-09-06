@@ -1,3 +1,4 @@
+using FluentValidation.Results;
 using SubscriptionManager.Application.DTOs.Plans;
 using SubscriptionManager.Application.Validators;
 using SubscriptionManager.Domain.Entities;
@@ -21,7 +22,7 @@ public class CreatePlanHandler
 
     public async Task<PlanResponse> Handle(CreatePlanRequest request)
     {
-        Validate(request);
+        await ValidateAndThrowOnFailures(request);
 
         var plan = new Plan(request.Name, new Money(request.MonthlyPrice));
         await _planRepository.AddAsync(plan);
@@ -30,11 +31,17 @@ public class CreatePlanHandler
         return new PlanResponse(plan.Id, plan.Name, plan.MonthlyPrice.Amount, plan.IsActive);
     }
 
-    private static void Validate(CreatePlanRequest request)
+    private async Task ValidateAndThrowOnFailures(CreatePlanRequest request)
     {
         var validator = new CreatePlanRequestValidator();
 
         var result = validator.Validate(request);
+
+        var nameExists = await _planRepository.ExistsActiveWithNameAsync(request.Name);
+        if (nameExists)
+        {
+            result.Errors.Add(new ValidationFailure(string.Empty, "Já existe um plano ativo com esse nome."));
+        }
 
         if (result.IsValid == false)
         {
