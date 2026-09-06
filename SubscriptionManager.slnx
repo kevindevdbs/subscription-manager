@@ -6,6 +6,10 @@
     <Project Path="src/SubscriptionManager.Infrastructure/SubscriptionManager.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/CommonTestUtilities/CommonTestUtilities.csproj" />
     <Project Path="tests/SubscriptionManager.Domain.Tests/SubscriptionManager.Domain.Tests.csproj" />
+    <Project Path="tests/UseCases.Tests/UseCases.Tests.csproj" />
+    <Project Path="tests/Validators.Tests/Validators.Tests.csproj" />
+    <Project Path="tests/WebApi.Tests/WebApi.Tests.csproj" />
   </Folder>
 </Solution>

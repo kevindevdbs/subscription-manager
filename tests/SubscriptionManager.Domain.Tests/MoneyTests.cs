@@ -1,3 +1,4 @@
+using Shouldly;
 ﻿using SubscriptionManager.Domain.ValueObjects;
 
 namespace SubscriptionManager.Domain.Tests;
@@ -11,7 +12,7 @@ public class MoneyTests
 
         var result = money.Add(new Money(5));
 
-        Assert.Equal(new Money(15), result);
+        result.ShouldBe(new Money(15));
     }
 
     [Fact]
@@ -19,20 +20,20 @@ public class MoneyTests
     {
         var money = new Money(33.33m);
         var result = money.ApplyPercentage(2m);
-        Assert.Equal(0.67m, result.Amount);
+        result.Amount.ShouldBe(0.67m);
     }
 
     [Fact]
     public void Constructor_NegativeAmount_ThrowsArgumentException()
     {
-        Assert.Throws<ArgumentException>(() => new Money(-1));
+        Should.Throw<ArgumentException>(() => new Money(-1));
 
     }
 
     [Fact]
     public void Equals_SameAmount_ReturnsTrue()
     {
-        Assert.Equal(new Money(10), new Money(10));
+        new Money(10).ShouldBe(new Money(10));
     }
 
     [Fact]
@@ -40,7 +41,7 @@ public class MoneyTests
     {
         var money = new Money(0);
 
-        Assert.Equal(0m, money.Amount);
+        money.Amount.ShouldBe(0m);
     }
 
     [Fact]
@@ -50,7 +51,7 @@ public class MoneyTests
 
         money.Add(new Money(5));
 
-        Assert.Equal(10m, money.Amount);
+        money.Amount.ShouldBe(10m);
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public class MoneyTests
 
         var result = money.ApplyPercentage(0m);
 
-        Assert.Equal(0m, result.Amount);
+        result.Amount.ShouldBe(0m);
     }
 
     [Fact]
@@ -70,7 +71,7 @@ public class MoneyTests
 
         var result = money.ApplyPercentage(100m);
 
-        Assert.Equal(33.33m, result.Amount);
+        result.Amount.ShouldBe(33.33m);
     }
 
     [Fact]
@@ -80,7 +81,7 @@ public class MoneyTests
 
         var result = money.ApplyPercentage(2.5m);
 
-        Assert.Equal(0.03m, result.Amount);
+        result.Amount.ShouldBe(0.03m);
     }
 
     [Fact]
@@ -88,13 +89,13 @@ public class MoneyTests
     {
         var money = new Money(10);
 
-        Assert.Throws<ArgumentException>(() => money.ApplyPercentage(-1m));
+        Should.Throw<ArgumentException>(() => money.ApplyPercentage(-1m));
     }
 
     [Fact]
     public void Equals_DifferentAmounts_ReturnsFalse()
     {
-        Assert.NotEqual(new Money(10), new Money(20));
+        new Money(20).ShouldNotBe(new Money(10));
     }
 
     [Fact]
@@ -102,6 +103,6 @@ public class MoneyTests
     {
         var money = new Money(10);
 
-        Assert.Throws<ArgumentNullException>(() => money.Add(null!));
+        Should.Throw<ArgumentNullException>(() => money.Add(null!));
     }
 }

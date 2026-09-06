@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -16,7 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SubscriptionManager.Domain\SubscriptionManager.Domain.csproj" />
+    <ProjectReference Include="..\CommonTestUtilities\CommonTestUtilities.csproj" />
+    <ProjectReference Include="..\..\src\SubscriptionManager.Application\SubscriptionManager.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

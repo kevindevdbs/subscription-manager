@@ -1,3 +1,4 @@
+using Shouldly;
 using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Enums;
 using SubscriptionManager.Domain.Tests.Builders;
@@ -12,7 +13,7 @@ public class InvoiceTests
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
-        Assert.Equal(InvoiceStatus.Paid, invoice.Status);
+        invoice.Status.ShouldBe(InvoiceStatus.Paid);
     }
 
     [Fact]
@@ -20,7 +21,7 @@ public class InvoiceTests
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
-        Assert.Throws<InvalidOperationException>(() => invoice.Pay(DateTime.Now));
+        Should.Throw<InvalidOperationException>(() => invoice.Pay(DateTime.Now));
     }
 
     [Fact]
@@ -28,7 +29,7 @@ public class InvoiceTests
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
-        Assert.Throws<InvalidOperationException>(() => invoice.Cancel());
+        Should.Throw<InvalidOperationException>(() => invoice.Cancel());
     }
 
     [Fact]
@@ -36,7 +37,7 @@ public class InvoiceTests
     {
         var invoice = InvoiceBuilder.Build();
         invoice.MarkAsOverdue(DateTime.Now);
-        Assert.Equal(InvoiceStatus.Pending, invoice.Status);
+        invoice.Status.ShouldBe(InvoiceStatus.Pending);
 
     }
 
@@ -45,7 +46,7 @@ public class InvoiceTests
     {
         var invoice = new Invoice(Guid.NewGuid(), new Money(100), DateTime.Now, new DateTime(2026, 3, 17));
 
-        Assert.Equal(new DateTime(2026, 3, 1), invoice.ReferenceMonth);
+        invoice.ReferenceMonth.ShouldBe(new DateTime(2026, 3, 1));
     }
 
     [Fact]
@@ -53,7 +54,7 @@ public class InvoiceTests
     {
         var invoice = new Invoice(Guid.NewGuid(), new Money(100), DateTime.Now, new DateTime(2026, 3, 17, 14, 30, 45));
 
-        Assert.Equal(new DateTime(2026, 3, 1), invoice.ReferenceMonth);
+        invoice.ReferenceMonth.ShouldBe(new DateTime(2026, 3, 1));
     }
 
     [Fact]
@@ -61,7 +62,7 @@ public class InvoiceTests
     {
         var invoice = new Invoice(Guid.NewGuid(), new Money(100), DateTime.Now, new DateTime(2026, 1, 31));
 
-        Assert.Equal(new DateTime(2026, 1, 1), invoice.ReferenceMonth);
+        invoice.ReferenceMonth.ShouldBe(new DateTime(2026, 1, 1));
     }
 
     [Fact]
@@ -69,7 +70,7 @@ public class InvoiceTests
     {
         var invoice = new Invoice(Guid.NewGuid(), new Money(100), DateTime.Now, new DateTime(2026, 3, 1));
 
-        Assert.Equal(new DateTime(2026, 3, 1), invoice.ReferenceMonth);
+        invoice.ReferenceMonth.ShouldBe(new DateTime(2026, 3, 1));
     }
 
     [Fact]
@@ -77,25 +78,25 @@ public class InvoiceTests
     {
         var invoice = InvoiceBuilder.Build();
 
-        Assert.Equal(InvoiceStatus.Pending, invoice.Status);
+        invoice.Status.ShouldBe(InvoiceStatus.Pending);
     }
 
     [Fact]
     public void Constructor_EmptyContractId_ThrowsArgumentException()
     {
-        Assert.Throws<ArgumentException>(() => new Invoice(Guid.Empty, new Money(100), DateTime.Now, DateTime.Now));
+        Should.Throw<ArgumentException>(() => new Invoice(Guid.Empty, new Money(100), DateTime.Now, DateTime.Now));
     }
 
     [Fact]
     public void Constructor_NullAmount_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => new Invoice(Guid.NewGuid(), null!, DateTime.Now, DateTime.Now));
+        Should.Throw<ArgumentNullException>(() => new Invoice(Guid.NewGuid(), null!, DateTime.Now, DateTime.Now));
     }
 
     [Fact]
     public void Constructor_ZeroAmount_ThrowsArgumentException()
     {
-        Assert.Throws<ArgumentException>(() => new Invoice(Guid.NewGuid(), new Money(0), DateTime.Now, DateTime.Now));
+        Should.Throw<ArgumentException>(() => new Invoice(Guid.NewGuid(), new Money(0), DateTime.Now, DateTime.Now));
     }
 
     [Fact]
@@ -106,7 +107,7 @@ public class InvoiceTests
 
         invoice.Pay(paidAt);
 
-        Assert.Equal(paidAt, invoice.PaidAt);
+        invoice.PaidAt.ShouldBe(paidAt);
     }
 
     [Fact]
@@ -117,7 +118,7 @@ public class InvoiceTests
 
         invoice.Pay(DateTime.Now);
 
-        Assert.Equal(InvoiceStatus.Paid, invoice.Status);
+        invoice.Status.ShouldBe(InvoiceStatus.Paid);
     }
 
     [Fact]
@@ -126,7 +127,7 @@ public class InvoiceTests
         var invoice = InvoiceBuilder.Build();
         invoice.Cancel();
 
-        Assert.Throws<InvalidOperationException>(() => invoice.Pay(DateTime.Now));
+        Should.Throw<InvalidOperationException>(() => invoice.Pay(DateTime.Now));
     }
 
     [Fact]
@@ -136,7 +137,7 @@ public class InvoiceTests
         invoice.Pay(DateTime.Now);
         invoice.Refund();
 
-        Assert.Throws<InvalidOperationException>(() => invoice.Pay(DateTime.Now));
+        Should.Throw<InvalidOperationException>(() => invoice.Pay(DateTime.Now));
     }
 
     [Fact]
@@ -146,7 +147,7 @@ public class InvoiceTests
 
         invoice.MarkAsOverdue(invoice.DueDate.AddDays(1));
 
-        Assert.Equal(InvoiceStatus.Overdue, invoice.Status);
+        invoice.Status.ShouldBe(InvoiceStatus.Overdue);
     }
 
     [Fact]
@@ -156,7 +157,7 @@ public class InvoiceTests
 
         invoice.MarkAsOverdue(invoice.DueDate);
 
-        Assert.Equal(InvoiceStatus.Pending, invoice.Status);
+        invoice.Status.ShouldBe(InvoiceStatus.Pending);
     }
 
     [Fact]
@@ -165,7 +166,7 @@ public class InvoiceTests
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
 
-        Assert.Throws<InvalidOperationException>(() => invoice.MarkAsOverdue(invoice.DueDate.AddDays(1)));
+        Should.Throw<InvalidOperationException>(() => invoice.MarkAsOverdue(invoice.DueDate.AddDays(1)));
     }
 
     [Fact]
@@ -174,7 +175,7 @@ public class InvoiceTests
         var invoice = InvoiceBuilder.Build();
         invoice.Cancel();
 
-        Assert.Throws<InvalidOperationException>(() => invoice.MarkAsOverdue(invoice.DueDate.AddDays(1)));
+        Should.Throw<InvalidOperationException>(() => invoice.MarkAsOverdue(invoice.DueDate.AddDays(1)));
     }
 
     [Fact]
@@ -185,7 +186,7 @@ public class InvoiceTests
 
         invoice.Refund();
 
-        Assert.Equal(InvoiceStatus.Refunded, invoice.Status);
+        invoice.Status.ShouldBe(InvoiceStatus.Refunded);
     }
 
     [Fact]
@@ -193,7 +194,7 @@ public class InvoiceTests
     {
         var invoice = InvoiceBuilder.Build();
 
-        Assert.Throws<InvalidOperationException>(() => invoice.Refund());
+        Should.Throw<InvalidOperationException>(() => invoice.Refund());
     }
 
     [Fact]
@@ -202,7 +203,7 @@ public class InvoiceTests
         var invoice = InvoiceBuilder.Build();
         invoice.Cancel();
 
-        Assert.Throws<InvalidOperationException>(() => invoice.Refund());
+        Should.Throw<InvalidOperationException>(() => invoice.Refund());
     }
 
     [Fact]
@@ -212,7 +213,7 @@ public class InvoiceTests
         invoice.Pay(DateTime.Now);
         invoice.Refund();
 
-        Assert.Throws<InvalidOperationException>(() => invoice.Refund());
+        Should.Throw<InvalidOperationException>(() => invoice.Refund());
     }
 
     [Fact]
@@ -222,7 +223,7 @@ public class InvoiceTests
 
         invoice.Cancel();
 
-        Assert.Equal(InvoiceStatus.Cancelled, invoice.Status);
+        invoice.Status.ShouldBe(InvoiceStatus.Cancelled);
     }
 
     [Fact]
@@ -233,7 +234,7 @@ public class InvoiceTests
 
         invoice.Cancel();
 
-        Assert.Equal(InvoiceStatus.Cancelled, invoice.Status);
+        invoice.Status.ShouldBe(InvoiceStatus.Cancelled);
     }
 
     [Fact]
@@ -242,7 +243,7 @@ public class InvoiceTests
         var invoice = InvoiceBuilder.Build();
         invoice.Cancel();
 
-        Assert.Throws<InvalidOperationException>(() => invoice.Cancel());
+        Should.Throw<InvalidOperationException>(() => invoice.Cancel());
     }
 
     [Fact]
@@ -252,6 +253,6 @@ public class InvoiceTests
         invoice.Pay(DateTime.Now);
         invoice.Refund();
 
-        Assert.Throws<InvalidOperationException>(() => invoice.Cancel());
+        Should.Throw<InvalidOperationException>(() => invoice.Cancel());
     }
 }
