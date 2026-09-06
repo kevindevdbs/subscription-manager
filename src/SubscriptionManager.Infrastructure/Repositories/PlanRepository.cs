@@ -1,0 +1,26 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SubscriptionManager.Domain.Entities;
+using SubscriptionManager.Domain.Repositories;
+using SubscriptionManager.Infrastructure.Data;
+
+namespace SubscriptionManager.Infrastructure.Repositories;
+
+public class PlanRepository : IPlanRepository
+{
+
+    private readonly AppDbContext _context;
+
+    public PlanRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+    public async Task AddAsync(Plan plan)
+    {
+        await _context.Plans.AddAsync(plan);
+    }
+
+    public async Task<Plan?> GetByIdAsync(Guid id)
+    {
+        return await _context.Plans.FirstOrDefaultAsync(p => p.Id == id);
+    }
+}
