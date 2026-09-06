@@ -5,5 +5,7 @@
     <Project Path="src/SubscriptionManager.Domain/SubscriptionManager.Domain.csproj" />
     <Project Path="src/SubscriptionManager.Infrastructure/SubscriptionManager.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/SubscriptionManager.Domain.Tests/SubscriptionManager.Domain.Tests.csproj" />
+  </Folder>
 </Solution>
