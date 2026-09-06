@@ -7,12 +7,15 @@ public record Money
     public Money(decimal amount)
     {
         if (amount < 0)
-            throw new ArgumentException("Amount cannot be negative", nameof(amount));
+            throw new ArgumentException("O valor não pode ser negativo.", nameof(amount));
         Amount = amount;
     }
 
     public Money Add(Money money)
     {
+        if (money == null)
+            throw new ArgumentNullException(nameof(money), "O valor não pode ser nulo.");
+
         decimal amountSum = Amount + money.Amount;
         return new Money(amountSum);
     }
