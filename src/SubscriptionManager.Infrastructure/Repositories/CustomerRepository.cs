@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Repositories;
 using SubscriptionManager.Infrastructure.Data;
@@ -22,5 +22,13 @@ public class CustomerRepository : ICustomerRepository
     public async Task<Customer?> GetByIdAsync(Guid id)
     {
         return await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<IEnumerable<Customer>> GetAllAsync()
+    {
+        return await _context.Customers
+            .AsNoTracking()
+            .OrderBy(c => c.Name)
+            .ToListAsync();
     }
 }

@@ -12,11 +12,16 @@ public class CustomersController : ControllerBase
 
     private readonly CreateCustomerHandler _handler;
     private readonly GetCustomerByIdHandler _getByIdHandler;
+    private readonly ListCustomersHandler _listHandler;
 
-    public CustomersController(CreateCustomerHandler handler, GetCustomerByIdHandler getByIdHandler)
+    public CustomersController(
+        CreateCustomerHandler handler,
+        GetCustomerByIdHandler getByIdHandler,
+        ListCustomersHandler listHandler)
     {
         _handler = handler;
         _getByIdHandler = getByIdHandler;
+        _listHandler = listHandler;
     }
 
     [HttpPost]
@@ -28,6 +33,15 @@ public class CustomersController : ControllerBase
         var response = await _handler.Handle(request);
 
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<CustomerResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> List()
+    {
+        var customers = await _listHandler.Handle();
+
+        return Ok(customers);
     }
 
     [HttpGet("{id:guid}")]

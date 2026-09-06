@@ -8,5 +8,7 @@ public interface IPlanRepository
 
     Task<bool> ExistsActiveWithNameAsync(string name);
 
+    Task<IEnumerable<Plan>> GetAllAsync();
+
     Task AddAsync(Plan plan);
 }
