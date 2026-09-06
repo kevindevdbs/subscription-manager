@@ -22,5 +22,12 @@ public class IContractRepositoryBuilder
         return this;
     }
 
+    public IContractRepositoryBuilder GetAll(params Contract[] contracts)
+    {
+        _mock.Setup(repository => repository.GetAllAsync()).ReturnsAsync(contracts);
+
+        return this;
+    }
+
     public IContractRepository Build() => _mock.Object;
 }

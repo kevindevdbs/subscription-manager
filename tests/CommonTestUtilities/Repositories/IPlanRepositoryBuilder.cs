@@ -22,5 +22,12 @@ public class IPlanRepositoryBuilder
         return this;
     }
 
+    public IPlanRepositoryBuilder GetAll(params Plan[] plans)
+    {
+        _mock.Setup(repository => repository.GetAllAsync()).ReturnsAsync(plans);
+
+        return this;
+    }
+
     public IPlanRepository Build() => _mock.Object;
 }

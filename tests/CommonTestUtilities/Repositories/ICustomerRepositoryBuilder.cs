@@ -15,5 +15,12 @@ public class ICustomerRepositoryBuilder
         return this;
     }
 
+    public ICustomerRepositoryBuilder GetAll(params Customer[] customers)
+    {
+        _mock.Setup(repository => repository.GetAllAsync()).ReturnsAsync(customers);
+
+        return this;
+    }
+
     public ICustomerRepository Build() => _mock.Object;
 }
