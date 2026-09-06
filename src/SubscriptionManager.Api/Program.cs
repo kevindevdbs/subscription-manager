@@ -36,6 +36,9 @@ builder.Services.AddScoped<GetPlanByIdHandler>();
 builder.Services.AddScoped<GetContractByIdHandler>();
 builder.Services.AddScoped<GetInvoicesByContractHandler>();
 builder.Services.AddScoped<ListInvoicesHandler>();
+builder.Services.AddScoped<ListCustomersHandler>();
+builder.Services.AddScoped<ListPlansHandler>();
+builder.Services.AddScoped<ListContractsHandler>();
 
 builder.Services.AddSwaggerGen(c =>
 {

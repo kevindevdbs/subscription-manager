@@ -15,15 +15,18 @@ public class ContractsController : ControllerBase
     private readonly CreateContractHandler _handler;
     private readonly GetContractByIdHandler _getByIdHandler;
     private readonly GetInvoicesByContractHandler _getInvoicesHandler;
+    private readonly ListContractsHandler _listHandler;
 
     public ContractsController(
         CreateContractHandler handler,
         GetContractByIdHandler getByIdHandler,
-        GetInvoicesByContractHandler getInvoicesHandler)
+        GetInvoicesByContractHandler getInvoicesHandler,
+        ListContractsHandler listHandler)
     {
         _handler = handler;
         _getByIdHandler = getByIdHandler;
         _getInvoicesHandler = getInvoicesHandler;
+        _listHandler = listHandler;
     }
 
     [HttpPost]
@@ -35,6 +38,15 @@ public class ContractsController : ControllerBase
         var response = await _handler.Handle(request);
 
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<ContractResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> List()
+    {
+        var contracts = await _listHandler.Handle();
+
+        return Ok(contracts);
     }
 
     [HttpGet("{id:guid}")]

@@ -12,11 +12,16 @@ public class PlansController : ControllerBase
 
     private readonly CreatePlanHandler _handler;
     private readonly GetPlanByIdHandler _getByIdHandler;
+    private readonly ListPlansHandler _listHandler;
 
-    public PlansController(CreatePlanHandler handler, GetPlanByIdHandler getByIdHandler)
+    public PlansController(
+        CreatePlanHandler handler,
+        GetPlanByIdHandler getByIdHandler,
+        ListPlansHandler listHandler)
     {
         _handler = handler;
         _getByIdHandler = getByIdHandler;
+        _listHandler = listHandler;
     }
 
     [HttpPost]
@@ -27,6 +32,15 @@ public class PlansController : ControllerBase
         var response = await _handler.Handle(request);
 
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<PlanResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> List()
+    {
+        var plans = await _listHandler.Handle();
+
+        return Ok(plans);
     }
 
     [HttpGet("{id:guid}")]
