@@ -8,5 +8,7 @@ public interface IContractRepository
 
     Task<IEnumerable<Contract>> GetActiveContractsAsync();
 
+    Task<IEnumerable<Contract>> GetAllAsync();
+
     Task AddAsync(Contract contract);
 }

@@ -28,4 +28,12 @@ public class PlanRepository : IPlanRepository
     {
         return await _context.Plans.AnyAsync(p => p.Name == name && p.IsActive);
     }
+
+    public async Task<IEnumerable<Plan>> GetAllAsync()
+    {
+        return await _context.Plans
+            .AsNoTracking()
+            .OrderBy(p => p.Name)
+            .ToListAsync();
+    }
 }
