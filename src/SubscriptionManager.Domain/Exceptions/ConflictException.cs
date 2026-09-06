@@ -2,16 +2,16 @@ using System.Net;
 
 namespace SubscriptionManager.Domain.Exceptions;
 
-public class NotFoundException : SubscriptionManagerException
+public class ConflictException : SubscriptionManagerException
 {
     private readonly string _message;
 
-    public NotFoundException(string message)
+    public ConflictException(string message)
     {
         _message = message;
     }
 
     public override List<string> GetErrorMessages() => [_message];
 
-    public override HttpStatusCode GetStatusCode() => HttpStatusCode.NotFound;
+    public override HttpStatusCode GetStatusCode() => HttpStatusCode.Conflict;
 }
