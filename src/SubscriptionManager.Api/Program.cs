@@ -13,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers(options => options.Filters.Add<ExceptionFilter>());
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -29,6 +30,12 @@ builder.Services.AddScoped<CreateContractHandler>();
 builder.Services.AddScoped<CreatePlanHandler>();
 builder.Services.AddScoped<CreateCustomerHandler>();
 builder.Services.AddScoped<GenerateMonthlyInvoicesHandler>();
+
+builder.Services.AddScoped<GetCustomerByIdHandler>();
+builder.Services.AddScoped<GetPlanByIdHandler>();
+builder.Services.AddScoped<GetContractByIdHandler>();
+builder.Services.AddScoped<GetInvoicesByContractHandler>();
+builder.Services.AddScoped<ListInvoicesHandler>();
 
 builder.Services.AddSwaggerGen(c =>
 {

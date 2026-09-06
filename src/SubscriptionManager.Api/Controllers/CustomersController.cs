@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SubscriptionManager.Application.DTOs;
 using SubscriptionManager.Application.DTOs.Customers;
 using SubscriptionManager.Application.UseCases.Customers;
 
@@ -10,13 +11,18 @@ public class CustomersController : ControllerBase
 {
 
     private readonly CreateCustomerHandler _handler;
+    private readonly GetCustomerByIdHandler _getByIdHandler;
 
-    public CustomersController(CreateCustomerHandler handler)
+    public CustomersController(CreateCustomerHandler handler, GetCustomerByIdHandler getByIdHandler)
     {
         _handler = handler;
+        _getByIdHandler = getByIdHandler;
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(CustomerResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> CreateCustomer(CreateCustomerRequest request)
     {
         var response = await _handler.Handle(request);
@@ -25,8 +31,12 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public IActionResult GetById(Guid id)
+    [ProducesResponseType(typeof(CustomerResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(Guid id)
     {
-        return NotFound();
+        var response = await _getByIdHandler.Handle(id);
+
+        return Ok(response);
     }
 }
