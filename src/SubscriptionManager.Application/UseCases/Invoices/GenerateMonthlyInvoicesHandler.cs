@@ -1,4 +1,6 @@
-﻿using SubscriptionManager.Domain.Entities;
+using SubscriptionManager.Application.DTOs.Invoices;
+using SubscriptionManager.Application.Validators;
+using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Exceptions;
 using SubscriptionManager.Domain.Repositories;
 
@@ -20,10 +22,11 @@ public class GenerateMonthlyInvoicesHandler
         _planRepository = planRepository;
     }
 
-    public async Task<int> Handle(DateTime referenceMonth)
+    public async Task<int> Handle(GenerateInvoiceRequest request)
     {
+        Validate(request);
 
-        var normalizedMonth = new DateTime(referenceMonth.Year, referenceMonth.Month, 1);
+        var normalizedMonth = new DateTime(request.ReferenceMonth.Year, request.ReferenceMonth.Month, 1);
 
         var contracts = await _contractRepository.GetActiveContractsAsync();
 
@@ -49,5 +52,19 @@ public class GenerateMonthlyInvoicesHandler
         await _unitOfWork.SaveChangesAsync();
 
         return invoicesCount;
+    }
+
+    private static void Validate(GenerateInvoiceRequest request)
+    {
+        var validator = new GenerateInvoiceRequestValidator();
+
+        var result = validator.Validate(request);
+
+        if (result.IsValid == false)
+        {
+            var errorMessages = result.Errors.Select(error => error.ErrorMessage).ToList();
+
+            throw new ErrorOnValidationException(errorMessages);
+        }
     }
 }

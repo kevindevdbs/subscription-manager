@@ -17,7 +17,7 @@ public class InvoicesController : ControllerBase
     [HttpPost("generate")]
     public async Task<IActionResult> GenerateMonthlyInvoices(GenerateInvoiceRequest request)
     {
-        var result = await _handler.Handle(request.ReferenceMonth);
+        var result = await _handler.Handle(request);
         return Ok(new { generated = result });
     }
 }
