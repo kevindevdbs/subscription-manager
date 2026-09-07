@@ -40,6 +40,12 @@ public class CreateContractHandler
             throw new NotFoundException("Plano não encontrado");
         }
 
+        var alreadyContracted = await _contractRepository.ExistsOpenForCustomerAndPlanAsync(request.CustomerId, request.PlanId);
+        if (alreadyContracted)
+        {
+            throw new ConflictException("Este cliente já possui um contrato aberto para este plano.");
+        }
+
         var contract = new Contract(request.CustomerId, request.PlanId, request.StartDate);
         await _contractRepository.AddAsync(contract);
         await _unitOfWork.SaveChangesAsync();
