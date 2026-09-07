@@ -7,7 +7,9 @@ public class MarkInvoiceAsOverdueRequestValidator : AbstractValidator<MarkInvoic
 {
     public MarkInvoiceAsOverdueRequestValidator()
     {
+        // Omitir a data é válido (vale a data corrente); mandar uma data vazia não.
         RuleFor(x => x.ReferenceDate)
-            .NotEmpty().WithMessage("A data de referência é obrigatória.");
+            .Must(value => value!.Value != default).WithMessage("A data de referência é inválida.")
+            .When(x => x.ReferenceDate.HasValue);
     }
 }

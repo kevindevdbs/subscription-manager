@@ -57,7 +57,7 @@ public class InvoicesController : ControllerBase
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Pay(Guid id, PayInvoiceRequest request)
+    public async Task<IActionResult> Pay(Guid id, [FromBody] PayInvoiceRequest? request = null)
     {
         var invoice = await _payHandler.Handle(id, request);
 
@@ -69,7 +69,7 @@ public class InvoicesController : ControllerBase
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> MarkAsOverdue(Guid id, MarkInvoiceAsOverdueRequest request)
+    public async Task<IActionResult> MarkAsOverdue(Guid id, [FromBody] MarkInvoiceAsOverdueRequest? request = null)
     {
         var invoice = await _markAsOverdueHandler.Handle(id, request);
 

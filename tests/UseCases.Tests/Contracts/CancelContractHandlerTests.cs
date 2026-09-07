@@ -74,12 +74,36 @@ public class CancelContractHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ShouldFallBackToNow_WhenEndDateIsOmitted()
+    {
+        var contract = ContractBuilder.Build();
+
+        var before = DateTime.UtcNow;
+
+        var result = await CreateHandler(contract).Handle(contract.Id, new CancelContractRequest());
+
+        result.Status.ShouldBe("Cancelled");
+        result.EndDate!.Value.ShouldBeInRange(before, DateTime.UtcNow);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldFallBackToNow_WhenThereIsNoBodyAtAll()
+    {
+        var contract = ContractBuilder.Build();
+
+        var result = await CreateHandler(contract).Handle(contract.Id, null);
+
+        result.Status.ShouldBe("Cancelled");
+        result.EndDate.ShouldNotBeNull();
+    }
+
+    [Fact]
     public async Task Handle_ShouldValidateBeforeTouchingTheRepository()
     {
         var exception = await Should.ThrowAsync<ErrorOnValidationException>(
-            () => CreateHandler(null).Handle(Guid.NewGuid(), new CancelContractRequest(default)));
+            () => CreateHandler(null).Handle(Guid.NewGuid(), new CancelContractRequest(default(DateTime))));
 
-        exception.GetErrorMessages().ShouldContain("A data de encerramento é obrigatória.");
+        exception.GetErrorMessages().ShouldContain("A data de encerramento é inválida.");
     }
 
     private static CancelContractHandler CreateHandler(Contract? contract)

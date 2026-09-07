@@ -17,8 +17,10 @@ public class MarkInvoiceAsOverdueHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<InvoiceResponse> Handle(Guid id, MarkInvoiceAsOverdueRequest request)
+    public async Task<InvoiceResponse> Handle(Guid id, MarkInvoiceAsOverdueRequest? request)
     {
+        request ??= new MarkInvoiceAsOverdueRequest();
+
         Validate(request);
 
         var invoice = await _invoiceRepository.GetByIdAsync(id);
@@ -31,7 +33,7 @@ public class MarkInvoiceAsOverdueHandler
         {
             // A entidade só vira Overdue quando a data de referência passou do
             // vencimento; antes disso a fatura continua Pending e a resposta mostra isso.
-            invoice.MarkAsOverdue(request.ReferenceDate);
+            invoice.MarkAsOverdue(request.ReferenceDate ?? DateTime.UtcNow);
         }
         catch (InvalidOperationException exception)
         {

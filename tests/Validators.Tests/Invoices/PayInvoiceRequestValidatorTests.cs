@@ -17,13 +17,21 @@ public class PayInvoiceRequestValidatorTests
     }
 
     [Fact]
-    public void Validate_ShouldHaveError_WhenPaidAtIsDefault()
+    public void Validate_ShouldAcceptAnOmittedDate()
     {
-        var request = new PayInvoiceRequest(default);
+        var result = new PayInvoiceRequestValidator().Validate(new PayInvoiceRequest());
+
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Validate_ShouldHaveError_WhenPaidAtIsInformedButEmpty()
+    {
+        var request = new PayInvoiceRequest(default(DateTime));
 
         var result = new PayInvoiceRequestValidator().Validate(request);
 
         result.IsValid.ShouldBeFalse();
-        result.Errors.ShouldContain(error => error.ErrorMessage == "A data do pagamento é obrigatória.");
+        result.Errors.ShouldContain(error => error.ErrorMessage == "A data do pagamento é inválida.");
     }
 }

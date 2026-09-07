@@ -59,12 +59,36 @@ public class PayInvoiceHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ShouldFallBackToNow_WhenPaidAtIsOmitted()
+    {
+        var invoice = InvoiceBuilder.Build();
+
+        var before = DateTime.UtcNow;
+
+        var result = await CreateHandler(invoice).Handle(invoice.Id, new PayInvoiceRequest());
+
+        result.Status.ShouldBe("Paid");
+        result.PaidAt!.Value.ShouldBeInRange(before, DateTime.UtcNow);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldFallBackToNow_WhenThereIsNoBodyAtAll()
+    {
+        var invoice = InvoiceBuilder.Build();
+
+        var result = await CreateHandler(invoice).Handle(invoice.Id, null);
+
+        result.Status.ShouldBe("Paid");
+        result.PaidAt.ShouldNotBeNull();
+    }
+
+    [Fact]
     public async Task Handle_ShouldValidateBeforeTouchingTheRepository()
     {
         var exception = await Should.ThrowAsync<ErrorOnValidationException>(
-            () => CreateHandler(null).Handle(Guid.NewGuid(), new PayInvoiceRequest(default)));
+            () => CreateHandler(null).Handle(Guid.NewGuid(), new PayInvoiceRequest(default(DateTime))));
 
-        exception.GetErrorMessages().ShouldContain("A data do pagamento é obrigatória.");
+        exception.GetErrorMessages().ShouldContain("A data do pagamento é inválida.");
     }
 
     private static PayInvoiceHandler CreateHandler(Invoice? invoice)

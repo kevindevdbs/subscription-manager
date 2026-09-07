@@ -56,17 +56,34 @@ public class InvoiceTransitionTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Pay_ShouldReturnBadRequest_WhenPaidAtIsMissing()
+    public async Task Pay_ShouldUseTheCurrentDate_WhenTheBodyIsOmitted()
     {
         var invoice = await CreateInvoice(new DateTime(2028, 3, 1));
 
-        var response = await Patch($"/api/invoices/{invoice.Id}/pay", new PayInvoiceRequest(default));
+        var before = DateTime.UtcNow;
+
+        var response = await Patch($"/api/invoices/{invoice.Id}/pay");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        using var json = await ReadJson(response);
+
+        json.RootElement.GetProperty("status").GetString().ShouldBe("Paid");
+        json.RootElement.GetProperty("paidAt").GetDateTime().ShouldBeInRange(before, DateTime.UtcNow);
+    }
+
+    [Fact]
+    public async Task Pay_ShouldReturnBadRequest_WhenPaidAtIsInformedButEmpty()
+    {
+        var invoice = await CreateInvoice(new DateTime(2028, 10, 1));
+
+        var response = await Patch($"/api/invoices/{invoice.Id}/pay", new PayInvoiceRequest(default(DateTime)));
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var errors = await ReadErrors(response);
 
-        errors.ShouldContain("A data do pagamento é obrigatória.");
+        errors.ShouldContain("A data do pagamento é inválida.");
     }
 
     [Fact]

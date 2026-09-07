@@ -17,13 +17,21 @@ public class CancelContractRequestValidatorTests
     }
 
     [Fact]
-    public void Validate_ShouldHaveError_WhenEndDateIsDefault()
+    public void Validate_ShouldAcceptAnOmittedDate()
     {
-        var request = new CancelContractRequest(default);
+        var result = new CancelContractRequestValidator().Validate(new CancelContractRequest());
+
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Validate_ShouldHaveError_WhenEndDateIsInformedButEmpty()
+    {
+        var request = new CancelContractRequest(default(DateTime));
 
         var result = new CancelContractRequestValidator().Validate(request);
 
         result.IsValid.ShouldBeFalse();
-        result.Errors.ShouldContain(error => error.ErrorMessage == "A data de encerramento é obrigatória.");
+        result.Errors.ShouldContain(error => error.ErrorMessage == "A data de encerramento é inválida.");
     }
 }

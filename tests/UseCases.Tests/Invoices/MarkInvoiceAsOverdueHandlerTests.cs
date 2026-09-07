@@ -62,12 +62,33 @@ public class MarkInvoiceAsOverdueHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ShouldFallBackToNow_WhenReferenceDateIsOmitted()
+    {
+        // Vencimento no passado, então "agora" já passou dele.
+        var invoice = InvoiceBuilder.Build(referenceMonth: new DateTime(2020, 1, 1));
+
+        var result = await CreateHandler(invoice).Handle(invoice.Id, new MarkInvoiceAsOverdueRequest());
+
+        result.Status.ShouldBe("Overdue");
+    }
+
+    [Fact]
+    public async Task Handle_ShouldFallBackToNow_WhenThereIsNoBodyAtAll()
+    {
+        var invoice = InvoiceBuilder.Build(referenceMonth: new DateTime(2020, 1, 1));
+
+        var result = await CreateHandler(invoice).Handle(invoice.Id, null);
+
+        result.Status.ShouldBe("Overdue");
+    }
+
+    [Fact]
     public async Task Handle_ShouldValidateBeforeTouchingTheRepository()
     {
         var exception = await Should.ThrowAsync<ErrorOnValidationException>(
-            () => CreateHandler(null).Handle(Guid.NewGuid(), new MarkInvoiceAsOverdueRequest(default)));
+            () => CreateHandler(null).Handle(Guid.NewGuid(), new MarkInvoiceAsOverdueRequest(default(DateTime))));
 
-        exception.GetErrorMessages().ShouldContain("A data de referência é obrigatória.");
+        exception.GetErrorMessages().ShouldContain("A data de referência é inválida.");
     }
 
     private static MarkInvoiceAsOverdueHandler CreateHandler(Invoice? invoice)

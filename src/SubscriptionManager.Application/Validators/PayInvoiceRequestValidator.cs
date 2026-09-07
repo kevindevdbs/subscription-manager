@@ -7,7 +7,9 @@ public class PayInvoiceRequestValidator : AbstractValidator<PayInvoiceRequest>
 {
     public PayInvoiceRequestValidator()
     {
+        // Omitir a data é válido (vale a data corrente); mandar uma data vazia não.
         RuleFor(x => x.PaidAt)
-            .NotEmpty().WithMessage("A data do pagamento é obrigatória.");
+            .Must(value => value!.Value != default).WithMessage("A data do pagamento é inválida.")
+            .When(x => x.PaidAt.HasValue);
     }
 }

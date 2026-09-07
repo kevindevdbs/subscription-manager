@@ -17,8 +17,10 @@ public class PayInvoiceHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<InvoiceResponse> Handle(Guid id, PayInvoiceRequest request)
+    public async Task<InvoiceResponse> Handle(Guid id, PayInvoiceRequest? request)
     {
+        request ??= new PayInvoiceRequest();
+
         Validate(request);
 
         var invoice = await _invoiceRepository.GetByIdAsync(id);
@@ -29,7 +31,7 @@ public class PayInvoiceHandler
 
         try
         {
-            invoice.Pay(request.PaidAt);
+            invoice.Pay(request.PaidAt ?? DateTime.UtcNow);
         }
         catch (InvalidOperationException exception)
         {

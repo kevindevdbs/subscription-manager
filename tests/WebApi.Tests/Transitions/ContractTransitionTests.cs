@@ -7,7 +7,9 @@ namespace WebApi.Tests.Transitions;
 
 public class ContractTransitionTests : BaseIntegrationTest
 {
-    private static readonly DateTime StartDate = new(2028, 1, 1);
+    // Data no passado para que o encerramento sem corpo (que vale "agora")
+    // caia depois do início do contrato.
+    private static readonly DateTime StartDate = new(2026, 1, 1);
 
     public ContractTransitionTests(SubscriptionManagerApplicationFactory factory) : base(factory)
     {
@@ -133,17 +135,34 @@ public class ContractTransitionTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Cancel_ShouldReturnBadRequest_WhenEndDateIsMissing()
+    public async Task Cancel_ShouldUseTheCurrentDate_WhenTheBodyIsOmitted()
     {
         var contractId = await CreateContract();
 
-        var response = await Patch($"/api/contracts/{contractId}/cancel", new CancelContractRequest(default));
+        var before = DateTime.UtcNow;
+
+        var response = await Patch($"/api/contracts/{contractId}/cancel");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        using var json = await ReadJson(response);
+
+        json.RootElement.GetProperty("status").GetString().ShouldBe("Cancelled");
+        json.RootElement.GetProperty("endDate").GetDateTime().ShouldBeInRange(before, DateTime.UtcNow);
+    }
+
+    [Fact]
+    public async Task Cancel_ShouldReturnBadRequest_WhenEndDateIsInformedButEmpty()
+    {
+        var contractId = await CreateContract();
+
+        var response = await Patch($"/api/contracts/{contractId}/cancel", new CancelContractRequest(default(DateTime)));
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
         var errors = await ReadErrors(response);
 
-        errors.ShouldContain("A data de encerramento é obrigatória.");
+        errors.ShouldContain("A data de encerramento é inválida.");
     }
 
     private async Task<Guid> CreateContract()

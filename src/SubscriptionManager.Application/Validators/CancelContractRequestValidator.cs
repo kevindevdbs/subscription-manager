@@ -7,7 +7,9 @@ public class CancelContractRequestValidator : AbstractValidator<CancelContractRe
 {
     public CancelContractRequestValidator()
     {
+        // Omitir a data é válido (vale a data corrente); mandar uma data vazia não.
         RuleFor(x => x.EndDate)
-            .NotEmpty().WithMessage("A data de encerramento é obrigatória.");
+            .Must(value => value!.Value != default).WithMessage("A data de encerramento é inválida.")
+            .When(x => x.EndDate.HasValue);
     }
 }

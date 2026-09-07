@@ -17,8 +17,10 @@ public class CancelContractHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ContractResponse> Handle(Guid id, CancelContractRequest request)
+    public async Task<ContractResponse> Handle(Guid id, CancelContractRequest? request)
     {
+        request ??= new CancelContractRequest();
+
         Validate(request);
 
         var contract = await _contractRepository.GetByIdAsync(id);
@@ -27,14 +29,16 @@ public class CancelContractHandler
             throw new NotFoundException("Contrato não encontrado.");
         }
 
-        if (request.EndDate < contract.StartDate)
+        var endDate = request.EndDate ?? DateTime.UtcNow;
+
+        if (endDate < contract.StartDate)
         {
             throw new ErrorOnValidationException(["A data de encerramento não pode ser anterior à data de início."]);
         }
 
         try
         {
-            contract.Cancel(request.EndDate);
+            contract.Cancel(endDate);
         }
         catch (InvalidOperationException exception)
         {

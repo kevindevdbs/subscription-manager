@@ -106,7 +106,7 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Cancel(Guid id, CancelContractRequest request)
+    public async Task<IActionResult> Cancel(Guid id, [FromBody] CancelContractRequest? request = null)
     {
         var contract = await _cancelHandler.Handle(id, request);
 

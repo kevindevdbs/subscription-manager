@@ -17,13 +17,21 @@ public class MarkInvoiceAsOverdueRequestValidatorTests
     }
 
     [Fact]
-    public void Validate_ShouldHaveError_WhenReferenceDateIsDefault()
+    public void Validate_ShouldAcceptAnOmittedDate()
     {
-        var request = new MarkInvoiceAsOverdueRequest(default);
+        var result = new MarkInvoiceAsOverdueRequestValidator().Validate(new MarkInvoiceAsOverdueRequest());
+
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Validate_ShouldHaveError_WhenReferenceDateIsInformedButEmpty()
+    {
+        var request = new MarkInvoiceAsOverdueRequest(default(DateTime));
 
         var result = new MarkInvoiceAsOverdueRequestValidator().Validate(request);
 
         result.IsValid.ShouldBeFalse();
-        result.Errors.ShouldContain(error => error.ErrorMessage == "A data de referência é obrigatória.");
+        result.Errors.ShouldContain(error => error.ErrorMessage == "A data de referência é inválida.");
     }
 }
