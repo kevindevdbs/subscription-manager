@@ -16,6 +16,13 @@ public class IInvoiceRepositoryBuilder
         return this;
     }
 
+    public IInvoiceRepositoryBuilder GetById(Invoice invoice)
+    {
+        _mock.Setup(repository => repository.GetByIdAsync(invoice.Id)).ReturnsAsync(invoice);
+
+        return this;
+    }
+
     public IInvoiceRepositoryBuilder GetByContractId(Guid contractId, params Invoice[] invoices)
     {
         _mock.Setup(repository => repository.GetByContractIdAsync(contractId)).ReturnsAsync(invoices);
