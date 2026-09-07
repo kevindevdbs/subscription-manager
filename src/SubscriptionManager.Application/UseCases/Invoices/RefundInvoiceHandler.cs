@@ -24,14 +24,7 @@ public class RefundInvoiceHandler
             throw new NotFoundException("Fatura não encontrada.");
         }
 
-        try
-        {
-            invoice.Refund();
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new ConflictException(exception.Message);
-        }
+        invoice.Refund();
 
         await _unitOfWork.SaveChangesAsync();
 

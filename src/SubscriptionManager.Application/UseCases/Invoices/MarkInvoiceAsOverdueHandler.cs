@@ -29,16 +29,9 @@ public class MarkInvoiceAsOverdueHandler
             throw new NotFoundException("Fatura não encontrada.");
         }
 
-        try
-        {
-            // A entidade só vira Overdue quando a data de referência passou do
-            // vencimento; antes disso a fatura continua Pending e a resposta mostra isso.
-            invoice.MarkAsOverdue(request.ReferenceDate ?? DateTime.UtcNow);
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new ConflictException(exception.Message);
-        }
+        // A entidade só vira Overdue quando a data de referência passou do
+        // vencimento; antes disso a fatura continua Pending e a resposta mostra isso.
+        invoice.MarkAsOverdue(request.ReferenceDate ?? DateTime.UtcNow);
 
         await _unitOfWork.SaveChangesAsync();
 

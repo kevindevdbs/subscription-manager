@@ -1,5 +1,5 @@
 ﻿using SubscriptionManager.Domain.Enums;
-
+using SubscriptionManager.Domain.Exceptions;
 
 namespace SubscriptionManager.Domain.Entities;
 
@@ -38,7 +38,7 @@ public class Contract
     {
         if (Status != ContractStatus.Active)
         {
-            throw new InvalidOperationException("O contrato não está ativo e não pode ser suspenso.");
+            throw new ConflictException("O contrato não está ativo e não pode ser suspenso.");
         }
         Status = ContractStatus.Suspended;
     }
@@ -47,7 +47,7 @@ public class Contract
     {
         if (Status == ContractStatus.Cancelled)
         {
-            throw new InvalidOperationException("O contrato já está cancelado.");
+            throw new ConflictException("O contrato já está cancelado.");
         }
         Status = ContractStatus.Cancelled;
         EndDate = endDate;
@@ -57,7 +57,7 @@ public class Contract
     {
         if (Status != ContractStatus.Suspended)
         {
-            throw new InvalidOperationException("O contrato não está suspenso e não pode ser ativado.");
+            throw new ConflictException("O contrato não está suspenso e não pode ser ativado.");
         }
         Status = ContractStatus.Active;
     }

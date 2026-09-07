@@ -1,5 +1,5 @@
 ﻿using SubscriptionManager.Domain.ValueObjects;
-
+using SubscriptionManager.Domain.Exceptions;
 
 namespace SubscriptionManager.Domain.Entities;
 
@@ -42,7 +42,7 @@ public class Plan
     {
         if (!IsActive)
         {
-            throw new InvalidOperationException("O plano já está desativado.");
+            throw new ConflictException("O plano já está desativado.");
         }
 
         IsActive = false;

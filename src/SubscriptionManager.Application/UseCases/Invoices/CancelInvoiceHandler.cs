@@ -24,14 +24,7 @@ public class CancelInvoiceHandler
             throw new NotFoundException("Fatura não encontrada.");
         }
 
-        try
-        {
-            invoice.Cancel();
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new ConflictException(exception.Message);
-        }
+        invoice.Cancel();
 
         await _unitOfWork.SaveChangesAsync();
 

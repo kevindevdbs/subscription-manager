@@ -24,14 +24,7 @@ public class SuspendContractHandler
             throw new NotFoundException("Contrato não encontrado.");
         }
 
-        try
-        {
-            contract.Suspend();
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new ConflictException(exception.Message);
-        }
+        contract.Suspend();
 
         await _unitOfWork.SaveChangesAsync();
 

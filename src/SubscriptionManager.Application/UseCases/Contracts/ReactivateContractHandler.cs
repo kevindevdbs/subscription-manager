@@ -24,14 +24,7 @@ public class ReactivateContractHandler
             throw new NotFoundException("Contrato não encontrado.");
         }
 
-        try
-        {
-            contract.Reactivate();
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new ConflictException(exception.Message);
-        }
+        contract.Reactivate();
 
         await _unitOfWork.SaveChangesAsync();
 

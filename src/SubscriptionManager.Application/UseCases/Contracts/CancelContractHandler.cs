@@ -36,14 +36,7 @@ public class CancelContractHandler
             throw new ErrorOnValidationException(["A data de encerramento não pode ser anterior à data de início."]);
         }
 
-        try
-        {
-            contract.Cancel(endDate);
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new ConflictException(exception.Message);
-        }
+        contract.Cancel(endDate);
 
         await _unitOfWork.SaveChangesAsync();
 

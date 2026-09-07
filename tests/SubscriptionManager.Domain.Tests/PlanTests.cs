@@ -2,6 +2,7 @@ using Shouldly;
 using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Tests.Builders;
 using SubscriptionManager.Domain.ValueObjects;
+using SubscriptionManager.Domain.Exceptions;
 
 namespace SubscriptionManager.Domain.Tests;
 
@@ -50,11 +51,11 @@ public class PlanTests
     }
 
     [Fact]
-    public void Deactivate_InactivePlan_ThrowsInvalidOperationException()
+    public void Deactivate_InactivePlan_ThrowsConflictException()
     {
         var plan = PlanBuilder.Build();
         plan.Deactivate();
 
-        Should.Throw<InvalidOperationException>(() => plan.Deactivate());
+        Should.Throw<ConflictException>(() => plan.Deactivate());
     }
 }

@@ -29,14 +29,7 @@ public class PayInvoiceHandler
             throw new NotFoundException("Fatura não encontrada.");
         }
 
-        try
-        {
-            invoice.Pay(request.PaidAt ?? DateTime.UtcNow);
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new ConflictException(exception.Message);
-        }
+        invoice.Pay(request.PaidAt ?? DateTime.UtcNow);
 
         await _unitOfWork.SaveChangesAsync();
 
