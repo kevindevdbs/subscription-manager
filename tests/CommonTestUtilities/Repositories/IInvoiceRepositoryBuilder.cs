@@ -39,6 +39,15 @@ public class IInvoiceRepositoryBuilder
         return this;
     }
 
+    public IInvoiceRepositoryBuilder GetPendingDueBefore(params Invoice[] invoices)
+    {
+        _mock
+            .Setup(repository => repository.GetPendingDueBeforeAsync(It.IsAny<DateTime>()))
+            .ReturnsAsync(invoices);
+
+        return this;
+    }
+
     public void VerifyAddedInvoices(int times)
     {
         _mock.Verify(repository => repository.AddAsync(It.IsAny<Invoice>()), Times.Exactly(times));

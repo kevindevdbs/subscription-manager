@@ -15,6 +15,7 @@ public class InvoicesController : ControllerBase
     private readonly MarkInvoiceAsOverdueHandler _markAsOverdueHandler;
     private readonly RefundInvoiceHandler _refundHandler;
     private readonly CancelInvoiceHandler _cancelHandler;
+    private readonly MarkOverdueInvoicesHandler _markOverdueBatchHandler;
 
     public InvoicesController(
         GenerateMonthlyInvoicesHandler handler,
@@ -22,8 +23,10 @@ public class InvoicesController : ControllerBase
         PayInvoiceHandler payHandler,
         MarkInvoiceAsOverdueHandler markAsOverdueHandler,
         RefundInvoiceHandler refundHandler,
-        CancelInvoiceHandler cancelHandler)
+        CancelInvoiceHandler cancelHandler,
+        MarkOverdueInvoicesHandler markOverdueBatchHandler)
     {
+        _markOverdueBatchHandler = markOverdueBatchHandler;
         _handler = handler;
         _listHandler = listHandler;
         _payHandler = payHandler;
@@ -40,6 +43,19 @@ public class InvoicesController : ControllerBase
         var result = await _handler.Handle(request);
 
         return Ok(new { generated = result });
+    }
+
+    /// <summary>
+    /// Marca como vencidas todas as faturas pendentes cujo vencimento já passou.
+    /// </summary>
+    [HttpPost("mark-overdue")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> MarkOverdue([FromBody] MarkInvoiceAsOverdueRequest? request = null)
+    {
+        var result = await _markOverdueBatchHandler.Handle(request);
+
+        return Ok(new { markedAsOverdue = result });
     }
 
     [HttpGet]
