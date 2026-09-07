@@ -1,4 +1,5 @@
 using SubscriptionManager.Application.DTOs.Invoices;
+using SubscriptionManager.Application.Mappers;
 using SubscriptionManager.Application.Validators;
 using SubscriptionManager.Domain.Exceptions;
 using SubscriptionManager.Domain.Repositories;
@@ -23,16 +24,7 @@ public class ListInvoicesHandler
 
         var invoices = await _invoiceRepository.GetFilteredAsync(status, referenceMonth);
 
-        return invoices
-            .Select(invoice => new InvoiceResponse(
-                invoice.Id,
-                invoice.ContractId,
-                invoice.Amount.Amount,
-                invoice.DueDate,
-                invoice.ReferenceMonth,
-                invoice.PaidAt,
-                invoice.Status.ToString()))
-            .ToList();
+        return invoices.ToResponse();
     }
 
     private static void Validate(ListInvoicesRequest request)

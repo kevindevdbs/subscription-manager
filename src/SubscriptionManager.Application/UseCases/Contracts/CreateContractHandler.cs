@@ -1,4 +1,5 @@
 using SubscriptionManager.Application.DTOs.Contracts;
+using SubscriptionManager.Application.Mappers;
 using SubscriptionManager.Application.Validators;
 using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Exceptions;
@@ -50,7 +51,7 @@ public class CreateContractHandler
         await _contractRepository.AddAsync(contract);
         await _unitOfWork.SaveChangesAsync();
 
-        return new ContractResponse(contract.Id, contract.CustomerId, contract.PlanId, contract.StartDate, contract.EndDate, contract.Status.ToString());
+        return contract.ToResponse();
     }
 
     private static void Validate(CreateContractRequest request)
