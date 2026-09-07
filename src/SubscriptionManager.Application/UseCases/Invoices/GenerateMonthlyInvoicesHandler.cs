@@ -3,6 +3,7 @@ using SubscriptionManager.Application.Validators;
 using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Exceptions;
 using SubscriptionManager.Domain.Repositories;
+using SubscriptionManager.Domain.ValueObjects;
 
 namespace SubscriptionManager.Application.UseCases.Invoices;
 
@@ -43,7 +44,11 @@ public class GenerateMonthlyInvoicesHandler
                 {
                     throw new NotFoundException("Plano vinculado a este contrato não encontrado.");
                 }
-                var invoice = new Invoice(contract.Id, plan.MonthlyPrice, normalizedMonth.AddDays(9), normalizedMonth);
+                // Money é owned entity do plano e da fatura. Reaproveitar a instância do
+                // plano faria dois donos apontarem para o mesmo objeto rastreado e o
+                // SaveChanges quebraria assim que dois contratos usassem o mesmo plano.
+                var amount = new Money(plan.MonthlyPrice.Amount);
+                var invoice = new Invoice(contract.Id, amount, normalizedMonth.AddDays(9), normalizedMonth);
                 await _invoiceRepository.AddAsync(invoice);
                 invoicesCount++;
             }

@@ -56,4 +56,13 @@ public class InvoiceRepository : IInvoiceRepository
             .OrderBy(i => i.DueDate)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Invoice>> GetPendingDueBeforeAsync(DateTime referenceDate)
+    {
+        // Sem AsNoTracking de propósito: o handler altera o status destas faturas.
+        return await _context.Invoices
+            .Where(i => i.Status == InvoiceStatus.Pending && i.DueDate < referenceDate)
+            .OrderBy(i => i.DueDate)
+            .ToListAsync();
+    }
 }

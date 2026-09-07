@@ -29,5 +29,14 @@ public class IContractRepositoryBuilder
         return this;
     }
 
+    public IContractRepositoryBuilder ExistsOpenForCustomerAndPlan(Guid customerId, Guid planId)
+    {
+        _mock
+            .Setup(repository => repository.ExistsOpenForCustomerAndPlanAsync(customerId, planId))
+            .ReturnsAsync(true);
+
+        return this;
+    }
+
     public IContractRepository Build() => _mock.Object;
 }

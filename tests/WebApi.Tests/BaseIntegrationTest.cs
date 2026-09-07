@@ -32,6 +32,11 @@ public abstract class BaseIntegrationTest : IDisposable
         return await _httpClient.GetAsync(requestUri);
     }
 
+    protected async Task<HttpResponseMessage> Patch(string requestUri, object? request = null)
+    {
+        return await _httpClient.PatchAsJsonAsync(requestUri, request);
+    }
+
     protected static async Task<JsonDocument> ReadJson(HttpResponseMessage response)
     {
         await using var body = await response.Content.ReadAsStreamAsync();

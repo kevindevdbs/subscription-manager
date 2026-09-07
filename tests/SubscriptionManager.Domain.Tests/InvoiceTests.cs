@@ -3,6 +3,7 @@ using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Enums;
 using SubscriptionManager.Domain.Tests.Builders;
 using SubscriptionManager.Domain.ValueObjects;
+using SubscriptionManager.Domain.Exceptions;
 
 namespace SubscriptionManager.Domain.Tests;
 
@@ -17,19 +18,19 @@ public class InvoiceTests
     }
 
     [Fact]
-    public void Pay_AlreadyPaidInvoice_ThrowsInvalidOperationException()
+    public void Pay_AlreadyPaidInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
-        Should.Throw<InvalidOperationException>(() => invoice.Pay(DateTime.Now));
+        Should.Throw<ConflictException>(() => invoice.Pay(DateTime.Now));
     }
 
     [Fact]
-    public void Cancel_PaidInvoice_ThrowsInvalidOperationException()
+    public void Cancel_PaidInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
-        Should.Throw<InvalidOperationException>(() => invoice.Cancel());
+        Should.Throw<ConflictException>(() => invoice.Cancel());
     }
 
     [Fact]
@@ -122,22 +123,22 @@ public class InvoiceTests
     }
 
     [Fact]
-    public void Pay_CancelledInvoice_ThrowsInvalidOperationException()
+    public void Pay_CancelledInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Cancel();
 
-        Should.Throw<InvalidOperationException>(() => invoice.Pay(DateTime.Now));
+        Should.Throw<ConflictException>(() => invoice.Pay(DateTime.Now));
     }
 
     [Fact]
-    public void Pay_RefundedInvoice_ThrowsInvalidOperationException()
+    public void Pay_RefundedInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
         invoice.Refund();
 
-        Should.Throw<InvalidOperationException>(() => invoice.Pay(DateTime.Now));
+        Should.Throw<ConflictException>(() => invoice.Pay(DateTime.Now));
     }
 
     [Fact]
@@ -161,21 +162,21 @@ public class InvoiceTests
     }
 
     [Fact]
-    public void MarkAsOverdue_PaidInvoice_ThrowsInvalidOperationException()
+    public void MarkAsOverdue_PaidInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
 
-        Should.Throw<InvalidOperationException>(() => invoice.MarkAsOverdue(invoice.DueDate.AddDays(1)));
+        Should.Throw<ConflictException>(() => invoice.MarkAsOverdue(invoice.DueDate.AddDays(1)));
     }
 
     [Fact]
-    public void MarkAsOverdue_CancelledInvoice_ThrowsInvalidOperationException()
+    public void MarkAsOverdue_CancelledInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Cancel();
 
-        Should.Throw<InvalidOperationException>(() => invoice.MarkAsOverdue(invoice.DueDate.AddDays(1)));
+        Should.Throw<ConflictException>(() => invoice.MarkAsOverdue(invoice.DueDate.AddDays(1)));
     }
 
     [Fact]
@@ -190,30 +191,30 @@ public class InvoiceTests
     }
 
     [Fact]
-    public void Refund_PendingInvoice_ThrowsInvalidOperationException()
+    public void Refund_PendingInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
 
-        Should.Throw<InvalidOperationException>(() => invoice.Refund());
+        Should.Throw<ConflictException>(() => invoice.Refund());
     }
 
     [Fact]
-    public void Refund_CancelledInvoice_ThrowsInvalidOperationException()
+    public void Refund_CancelledInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Cancel();
 
-        Should.Throw<InvalidOperationException>(() => invoice.Refund());
+        Should.Throw<ConflictException>(() => invoice.Refund());
     }
 
     [Fact]
-    public void Refund_RefundedInvoice_ThrowsInvalidOperationException()
+    public void Refund_RefundedInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
         invoice.Refund();
 
-        Should.Throw<InvalidOperationException>(() => invoice.Refund());
+        Should.Throw<ConflictException>(() => invoice.Refund());
     }
 
     [Fact]
@@ -238,21 +239,21 @@ public class InvoiceTests
     }
 
     [Fact]
-    public void Cancel_CancelledInvoice_ThrowsInvalidOperationException()
+    public void Cancel_CancelledInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Cancel();
 
-        Should.Throw<InvalidOperationException>(() => invoice.Cancel());
+        Should.Throw<ConflictException>(() => invoice.Cancel());
     }
 
     [Fact]
-    public void Cancel_RefundedInvoice_ThrowsInvalidOperationException()
+    public void Cancel_RefundedInvoice_ThrowsConflictException()
     {
         var invoice = InvoiceBuilder.Build();
         invoice.Pay(DateTime.Now);
         invoice.Refund();
 
-        Should.Throw<InvalidOperationException>(() => invoice.Cancel());
+        Should.Throw<ConflictException>(() => invoice.Cancel());
     }
 }

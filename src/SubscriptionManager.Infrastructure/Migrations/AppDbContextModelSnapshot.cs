@@ -45,9 +45,12 @@ namespace SubscriptionManager.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
-
                     b.HasIndex("PlanId");
+
+                    b.HasIndex("CustomerId", "PlanId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_contracts_CustomerId_PlanId_Open")
+                        .HasFilter("[Status] <> 3");
 
                     b.ToTable("contracts", (string)null);
                 });

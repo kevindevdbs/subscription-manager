@@ -1,4 +1,5 @@
 using SubscriptionManager.Application.DTOs.Invoices;
+using SubscriptionManager.Application.Mappers;
 using SubscriptionManager.Domain.Exceptions;
 using SubscriptionManager.Domain.Repositories;
 
@@ -25,15 +26,6 @@ public class GetInvoicesByContractHandler
 
         var invoices = await _invoiceRepository.GetByContractIdAsync(contractId);
 
-        return invoices
-            .Select(invoice => new InvoiceResponse(
-                invoice.Id,
-                invoice.ContractId,
-                invoice.Amount.Amount,
-                invoice.DueDate,
-                invoice.ReferenceMonth,
-                invoice.PaidAt,
-                invoice.Status.ToString()))
-            .ToList();
+        return invoices.ToResponse();
     }
 }

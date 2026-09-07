@@ -1,4 +1,5 @@
 using SubscriptionManager.Application.DTOs.Contracts;
+using SubscriptionManager.Application.Mappers;
 using SubscriptionManager.Domain.Exceptions;
 using SubscriptionManager.Domain.Repositories;
 
@@ -21,12 +22,6 @@ public class GetContractByIdHandler
             throw new NotFoundException("Contrato não encontrado.");
         }
 
-        return new ContractResponse(
-            contract.Id,
-            contract.CustomerId,
-            contract.PlanId,
-            contract.StartDate,
-            contract.EndDate,
-            contract.Status.ToString());
+        return contract.ToResponse();
     }
 }
