@@ -41,6 +41,13 @@ public class CreateContractHandler
             throw new NotFoundException("Plano não encontrado");
         }
 
+        // Plano descontinuado não morre: os contratos existentes seguem sendo
+        // faturados, só não entra assinatura nova.
+        if (existingPlan.IsActive == false)
+        {
+            throw new ConflictException("Este plano está desativado e não aceita novos contratos.");
+        }
+
         var alreadyContracted = await _contractRepository.ExistsOpenForCustomerAndPlanAsync(request.CustomerId, request.PlanId);
         if (alreadyContracted)
         {

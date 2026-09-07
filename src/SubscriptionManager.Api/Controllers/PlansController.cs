@@ -13,15 +13,18 @@ public class PlansController : ControllerBase
     private readonly CreatePlanHandler _handler;
     private readonly GetPlanByIdHandler _getByIdHandler;
     private readonly ListPlansHandler _listHandler;
+    private readonly DeactivatePlanHandler _deactivateHandler;
 
     public PlansController(
         CreatePlanHandler handler,
         GetPlanByIdHandler getByIdHandler,
-        ListPlansHandler listHandler)
+        ListPlansHandler listHandler,
+        DeactivatePlanHandler deactivateHandler)
     {
         _handler = handler;
         _getByIdHandler = getByIdHandler;
         _listHandler = listHandler;
+        _deactivateHandler = deactivateHandler;
     }
 
     [HttpPost]
@@ -49,6 +52,21 @@ public class PlansController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var response = await _getByIdHandler.Handle(id);
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Descontinua o plano. Contratos existentes seguem sendo faturados;
+    /// o plano só deixa de aceitar adesão nova.
+    /// </summary>
+    [HttpPatch("{id:guid}/deactivate")]
+    [ProducesResponseType(typeof(PlanResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Deactivate(Guid id)
+    {
+        var response = await _deactivateHandler.Handle(id);
 
         return Ok(response);
     }

@@ -28,6 +28,7 @@ builder.Services.AddScoped<IContractRepository, ContractRepository>();
 
 builder.Services.AddScoped<CreateContractHandler>();
 builder.Services.AddScoped<CreatePlanHandler>();
+builder.Services.AddScoped<DeactivatePlanHandler>();
 builder.Services.AddScoped<CreateCustomerHandler>();
 builder.Services.AddScoped<GenerateMonthlyInvoicesHandler>();
 

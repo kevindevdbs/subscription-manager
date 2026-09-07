@@ -64,6 +64,21 @@ public class CreateContractHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ShouldThrowConflict_WhenPlanIsDeactivated()
+    {
+        var customer = CustomerBuilder.Build();
+        var plan = PlanBuilder.Build();
+        plan.Deactivate();
+
+        var request = CreateContractRequestBuilder.Build(customer.Id, plan.Id);
+
+        var exception = await Should.ThrowAsync<ConflictException>(() => CreateHandler(customer, plan).Handle(request));
+
+        exception.GetStatusCode().ShouldBe(HttpStatusCode.Conflict);
+        exception.GetErrorMessages().ShouldContain("Este plano está desativado e não aceita novos contratos.");
+    }
+
+    [Fact]
     public async Task Handle_ShouldThrowConflict_WhenCustomerAlreadyHasThePlan()
     {
         var customer = CustomerBuilder.Build();
