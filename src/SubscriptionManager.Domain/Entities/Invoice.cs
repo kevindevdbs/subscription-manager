@@ -1,6 +1,6 @@
 ﻿using SubscriptionManager.Domain.Enums;
 using SubscriptionManager.Domain.ValueObjects;
-
+using SubscriptionManager.Domain.Exceptions;
 
 namespace SubscriptionManager.Domain.Entities;
 
@@ -47,7 +47,7 @@ public class Invoice
 
         if (this.Status != InvoiceStatus.Pending && this.Status != InvoiceStatus.Overdue)
         {
-            throw new InvalidOperationException("A fatura não está em um estado válido para ser paga.");
+            throw new ConflictException("A fatura não está em um estado válido para ser paga.");
         }
 
         PaidAt = paidAt;
@@ -59,7 +59,7 @@ public class Invoice
     {
         if (this.Status != InvoiceStatus.Pending)
         {
-            throw new InvalidOperationException("A fatura não está em um estado válido para ser marcada como vencida.");
+            throw new ConflictException("A fatura não está em um estado válido para ser marcada como vencida.");
         }
 
         if (referenceDate > this.DueDate)
@@ -72,7 +72,7 @@ public class Invoice
     {
         if (this.Status != InvoiceStatus.Paid)
         {
-            throw new InvalidOperationException("A fatura não está em um estado válido para ser reembolsada.");
+            throw new ConflictException("A fatura não está em um estado válido para ser reembolsada.");
         }
         this.Status = InvoiceStatus.Refunded;
     }
@@ -81,7 +81,7 @@ public class Invoice
     {
         if (this.Status != InvoiceStatus.Pending && this.Status != InvoiceStatus.Overdue)
         {
-            throw new InvalidOperationException("A fatura não está em um estado válido para ser cancelada.");
+            throw new ConflictException("A fatura não está em um estado válido para ser cancelada.");
         }
         this.Status = InvoiceStatus.Cancelled;
     }

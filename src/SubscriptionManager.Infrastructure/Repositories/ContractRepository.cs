@@ -36,4 +36,14 @@ public class ContractRepository : IContractRepository
             .OrderByDescending(c => c.StartDate)
             .ToListAsync();
     }
+
+    public async Task<bool> ExistsOpenForCustomerAndPlanAsync(Guid customerId, Guid planId)
+    {
+        return await _context.Contracts
+            .AsNoTracking()
+            .AnyAsync(contract =>
+                contract.CustomerId == customerId &&
+                contract.PlanId == planId &&
+                contract.Status != Domain.Enums.ContractStatus.Cancelled);
+    }
 }

@@ -2,6 +2,7 @@ using Shouldly;
 using SubscriptionManager.Domain.Entities;
 using SubscriptionManager.Domain.Enums;
 using SubscriptionManager.Domain.Tests.Builders;
+using SubscriptionManager.Domain.Exceptions;
 
 namespace SubscriptionManager.Domain.Tests;
 
@@ -38,21 +39,21 @@ public class ContractTests
     }
 
     [Fact]
-    public void Suspend_SuspendedContract_ThrowsInvalidOperationException()
+    public void Suspend_SuspendedContract_ThrowsConflictException()
     {
         var contract = ContractBuilder.Build();
         contract.Suspend();
 
-        Should.Throw<InvalidOperationException>(() => contract.Suspend());
+        Should.Throw<ConflictException>(() => contract.Suspend());
     }
 
     [Fact]
-    public void Suspend_CancelledContract_ThrowsInvalidOperationException()
+    public void Suspend_CancelledContract_ThrowsConflictException()
     {
         var contract = ContractBuilder.Build();
         contract.Cancel(DateTime.Now);
 
-        Should.Throw<InvalidOperationException>(() => contract.Suspend());
+        Should.Throw<ConflictException>(() => contract.Suspend());
     }
 
     [Fact]
@@ -88,12 +89,12 @@ public class ContractTests
     }
 
     [Fact]
-    public void Cancel_CancelledContract_ThrowsInvalidOperationException()
+    public void Cancel_CancelledContract_ThrowsConflictException()
     {
         var contract = ContractBuilder.Build();
         contract.Cancel(DateTime.Now);
 
-        Should.Throw<InvalidOperationException>(() => contract.Cancel(DateTime.Now));
+        Should.Throw<ConflictException>(() => contract.Cancel(DateTime.Now));
     }
 
     [Fact]
@@ -108,19 +109,19 @@ public class ContractTests
     }
 
     [Fact]
-    public void Reactivate_ActiveContract_ThrowsInvalidOperationException()
+    public void Reactivate_ActiveContract_ThrowsConflictException()
     {
         var contract = ContractBuilder.Build();
 
-        Should.Throw<InvalidOperationException>(() => contract.Reactivate());
+        Should.Throw<ConflictException>(() => contract.Reactivate());
     }
 
     [Fact]
-    public void Reactivate_CancelledContract_ThrowsInvalidOperationException()
+    public void Reactivate_CancelledContract_ThrowsConflictException()
     {
         var contract = ContractBuilder.Build();
         contract.Cancel(DateTime.Now);
 
-        Should.Throw<InvalidOperationException>(() => contract.Reactivate());
+        Should.Throw<ConflictException>(() => contract.Reactivate());
     }
 }

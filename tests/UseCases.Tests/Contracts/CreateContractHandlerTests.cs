@@ -63,7 +63,60 @@ public class CreateContractHandlerTests
         exception.GetErrorMessages().ShouldContain("O identificador do cliente é obrigatório.");
     }
 
-    private static CreateContractHandler CreateHandler(Customer? customer, Plan? plan)
+    [Fact]
+    public async Task Handle_ShouldThrowConflict_WhenPlanIsDeactivated()
+    {
+        var customer = CustomerBuilder.Build();
+        var plan = PlanBuilder.Build();
+        plan.Deactivate();
+
+        var request = CreateContractRequestBuilder.Build(customer.Id, plan.Id);
+
+        var exception = await Should.ThrowAsync<ConflictException>(() => CreateHandler(customer, plan).Handle(request));
+
+        exception.GetStatusCode().ShouldBe(HttpStatusCode.Conflict);
+        exception.GetErrorMessages().ShouldContain("Este plano está desativado e não aceita novos contratos.");
+    }
+
+    [Fact]
+    public async Task Handle_ShouldThrowConflict_WhenCustomerAlreadyHasThePlan()
+    {
+        var customer = CustomerBuilder.Build();
+        var plan = PlanBuilder.Build();
+
+        var request = CreateContractRequestBuilder.Build(customer.Id, plan.Id);
+
+        var handler = CreateHandler(customer, plan, alreadyContracted: true);
+
+        var exception = await Should.ThrowAsync<ConflictException>(() => handler.Handle(request));
+
+        exception.GetStatusCode().ShouldBe(HttpStatusCode.Conflict);
+        exception.GetErrorMessages().ShouldContain("Este cliente já possui um contrato aberto para este plano.");
+    }
+
+    [Fact]
+    public async Task Handle_ShouldAllowTheSamePlanForADifferentCustomer()
+    {
+        var customer = CustomerBuilder.Build();
+        var plan = PlanBuilder.Build();
+
+        var request = CreateContractRequestBuilder.Build(customer.Id, plan.Id);
+
+        var contractBuilder = new IContractRepositoryBuilder()
+            .ExistsOpenForCustomerAndPlan(Guid.NewGuid(), plan.Id);
+
+        var handler = new CreateContractHandler(
+            contractBuilder.Build(),
+            IUnitOfWorkBuilder.Build(),
+            new ICustomerRepositoryBuilder().GetById(customer).Build(),
+            new IPlanRepositoryBuilder().GetById(plan).Build());
+
+        var result = await handler.Handle(request);
+
+        result.Status.ShouldBe("Active");
+    }
+
+    private static CreateContractHandler CreateHandler(Customer? customer, Plan? plan, bool alreadyContracted = false)
     {
         var customerBuilder = new ICustomerRepositoryBuilder();
         if (customer is not null)
@@ -77,8 +130,14 @@ public class CreateContractHandlerTests
             planBuilder.GetById(plan);
         }
 
+        var contractBuilder = new IContractRepositoryBuilder();
+        if (alreadyContracted && customer is not null && plan is not null)
+        {
+            contractBuilder.ExistsOpenForCustomerAndPlan(customer.Id, plan.Id);
+        }
+
         return new CreateContractHandler(
-            new IContractRepositoryBuilder().Build(),
+            contractBuilder.Build(),
             IUnitOfWorkBuilder.Build(),
             customerBuilder.Build(),
             planBuilder.Build());

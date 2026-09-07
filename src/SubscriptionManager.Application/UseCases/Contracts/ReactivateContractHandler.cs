@@ -5,13 +5,15 @@ using SubscriptionManager.Domain.Repositories;
 
 namespace SubscriptionManager.Application.UseCases.Contracts;
 
-public class GetContractByIdHandler
+public class ReactivateContractHandler
 {
     private readonly IContractRepository _contractRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public GetContractByIdHandler(IContractRepository contractRepository)
+    public ReactivateContractHandler(IContractRepository contractRepository, IUnitOfWork unitOfWork)
     {
         _contractRepository = contractRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ContractResponse> Handle(Guid id)
@@ -21,6 +23,10 @@ public class GetContractByIdHandler
         {
             throw new NotFoundException("Contrato não encontrado.");
         }
+
+        contract.Reactivate();
+
+        await _unitOfWork.SaveChangesAsync();
 
         return contract.ToResponse();
     }

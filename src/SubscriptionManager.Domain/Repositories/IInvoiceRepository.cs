@@ -13,5 +13,11 @@ public interface IInvoiceRepository
 
     Task<IEnumerable<Invoice>> GetFilteredAsync(InvoiceStatus? status, DateTime? referenceMonth);
 
+    /// <summary>
+    /// Faturas pendentes cujo vencimento já passou da data informada.
+    /// Devolve as entidades rastreadas, porque quem chama vai alterá-las.
+    /// </summary>
+    Task<IEnumerable<Invoice>> GetPendingDueBeforeAsync(DateTime referenceDate);
+
     Task AddAsync(Invoice invoice);
 }

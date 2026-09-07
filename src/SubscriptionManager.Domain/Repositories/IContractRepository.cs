@@ -10,5 +10,7 @@ public interface IContractRepository
 
     Task<IEnumerable<Contract>> GetAllAsync();
 
+    Task<bool> ExistsOpenForCustomerAndPlanAsync(Guid customerId, Guid planId);
+
     Task AddAsync(Contract contract);
 }
