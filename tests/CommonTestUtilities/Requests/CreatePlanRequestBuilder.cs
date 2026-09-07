@@ -9,7 +9,9 @@ public class CreatePlanRequestBuilder
     {
         return new Faker<CreatePlanRequest>()
             .CustomInstantiator(faker => new CreatePlanRequest(
-                faker.Commerce.ProductName(),
+                // Sufixo porque o vocabulário do Bogus é pequeno e a API recusa
+                // nome de plano ativo repetido — dois sorteios colidiam e vinha 409.
+                $"{faker.Commerce.ProductName()} {Guid.NewGuid().ToString("N")[..12]}",
                 faker.Random.Decimal(10, 500)));
     }
 }
