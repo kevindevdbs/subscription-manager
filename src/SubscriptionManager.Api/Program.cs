@@ -40,6 +40,14 @@ builder.Services.AddScoped<ListCustomersHandler>();
 builder.Services.AddScoped<ListPlansHandler>();
 builder.Services.AddScoped<ListContractsHandler>();
 
+builder.Services.AddScoped<PayInvoiceHandler>();
+builder.Services.AddScoped<MarkInvoiceAsOverdueHandler>();
+builder.Services.AddScoped<RefundInvoiceHandler>();
+builder.Services.AddScoped<CancelInvoiceHandler>();
+builder.Services.AddScoped<SuspendContractHandler>();
+builder.Services.AddScoped<ReactivateContractHandler>();
+builder.Services.AddScoped<CancelContractHandler>();
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "SubscriptionManager.Api", Version = "v1" });

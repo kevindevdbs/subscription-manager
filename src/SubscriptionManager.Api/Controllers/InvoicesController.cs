@@ -11,11 +11,25 @@ public class InvoicesController : ControllerBase
 {
     private readonly GenerateMonthlyInvoicesHandler _handler;
     private readonly ListInvoicesHandler _listHandler;
+    private readonly PayInvoiceHandler _payHandler;
+    private readonly MarkInvoiceAsOverdueHandler _markAsOverdueHandler;
+    private readonly RefundInvoiceHandler _refundHandler;
+    private readonly CancelInvoiceHandler _cancelHandler;
 
-    public InvoicesController(GenerateMonthlyInvoicesHandler handler, ListInvoicesHandler listHandler)
+    public InvoicesController(
+        GenerateMonthlyInvoicesHandler handler,
+        ListInvoicesHandler listHandler,
+        PayInvoiceHandler payHandler,
+        MarkInvoiceAsOverdueHandler markAsOverdueHandler,
+        RefundInvoiceHandler refundHandler,
+        CancelInvoiceHandler cancelHandler)
     {
         _handler = handler;
         _listHandler = listHandler;
+        _payHandler = payHandler;
+        _markAsOverdueHandler = markAsOverdueHandler;
+        _refundHandler = refundHandler;
+        _cancelHandler = cancelHandler;
     }
 
     [HttpPost("generate")]
@@ -36,5 +50,51 @@ public class InvoicesController : ControllerBase
         var invoices = await _listHandler.Handle(request);
 
         return Ok(invoices);
+    }
+
+    [HttpPatch("{id:guid}/pay")]
+    [ProducesResponseType(typeof(InvoiceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Pay(Guid id, PayInvoiceRequest request)
+    {
+        var invoice = await _payHandler.Handle(id, request);
+
+        return Ok(invoice);
+    }
+
+    [HttpPatch("{id:guid}/overdue")]
+    [ProducesResponseType(typeof(InvoiceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> MarkAsOverdue(Guid id, MarkInvoiceAsOverdueRequest request)
+    {
+        var invoice = await _markAsOverdueHandler.Handle(id, request);
+
+        return Ok(invoice);
+    }
+
+    [HttpPatch("{id:guid}/refund")]
+    [ProducesResponseType(typeof(InvoiceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Refund(Guid id)
+    {
+        var invoice = await _refundHandler.Handle(id);
+
+        return Ok(invoice);
+    }
+
+    [HttpPatch("{id:guid}/cancel")]
+    [ProducesResponseType(typeof(InvoiceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Cancel(Guid id)
+    {
+        var invoice = await _cancelHandler.Handle(id);
+
+        return Ok(invoice);
     }
 }
