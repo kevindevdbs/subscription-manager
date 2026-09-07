@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SubscriptionManager.Api.Filters;
+using SubscriptionManager.Api.Setup;
 using SubscriptionManager.Application.UseCases.Contracts;
 using SubscriptionManager.Application.UseCases.Customers;
 using SubscriptionManager.Application.UseCases.Invoices;
@@ -57,12 +58,21 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+await app.InitializeDatabaseAsync();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// A raiz cai no Swagger.
+app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
 // Configure the HTTP request pipeline.
 
-app.UseHttpsRedirection();
+// No container só existe HTTP e o redirect logaria aviso em todo request.
+if (!app.Configuration.GetValue<bool>("DisableHttpsRedirection"))
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 
