@@ -172,7 +172,7 @@ Regras que o modelo garante:
 |---|---|---|
 | `POST` | `/api/invoices/generate` | Emite as faturas da competência — `{ referenceMonth }` |
 | `GET` | `/api/invoices` | Lista com filtro `?status=&month=yyyy-MM` |
-| `POST` | `/api/invoices/mark-overdue` | Marca em lote as vencidas — `{ referenceDate? }` |
+| `POST` | `/api/invoices/mark-overdue` | Marca em lote as vencidas até ontem, pelo relógio do servidor |
 | `PATCH` | `/api/invoices/{id}/pay` | Paga — corpo `{ paidAt? }` |
 | `PATCH` | `/api/invoices/{id}/refund` | Estorna |
 | `PATCH` | `/api/invoices/{id}/cancel` | Cancela |

@@ -43,14 +43,13 @@ public class InvoicesController : ControllerBase
     }
 
     /// <summary>
-    /// Marca como vencidas todas as faturas pendentes cujo vencimento já passou.
+    /// Marca como vencidas todas as faturas pendentes cujo dia de vencimento já terminou.
     /// </summary>
     [HttpPost("mark-overdue")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> MarkOverdue([FromBody] MarkInvoiceAsOverdueRequest? request = null)
+    public async Task<IActionResult> MarkOverdue()
     {
-        var result = await _markOverdueBatchHandler.Handle(request);
+        var result = await _markOverdueBatchHandler.Handle();
 
         return Ok(new { markedAsOverdue = result });
     }

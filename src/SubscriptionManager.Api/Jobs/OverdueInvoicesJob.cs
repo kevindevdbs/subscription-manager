@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Options;
 using SubscriptionManager.Api.Configuration;
-using SubscriptionManager.Application.DTOs.Invoices;
 using SubscriptionManager.Application.UseCases.Invoices;
 
 namespace SubscriptionManager.Api.Jobs;
@@ -43,10 +42,7 @@ public class OverdueInvoicesJob : BackgroundService
 
             var handler = scope.ServiceProvider.GetRequiredService<MarkOverdueInvoicesHandler>();
 
-            // A fatura vence no fim do dia do vencimento, não à meia-noite dele.
-            var request = new MarkInvoiceAsOverdueRequest(DateTime.UtcNow.Date);
-
-            var count = await handler.Handle(request);
+            var count = await handler.Handle();
 
             _logger.LogInformation("{Count} fatura(s) marcada(s) como vencida(s).", count);
         }

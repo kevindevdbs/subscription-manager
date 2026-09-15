@@ -2,76 +2,82 @@ using CommonTestUtilities.Entities;
 using CommonTestUtilities.Repositories;
 using Microsoft.Extensions.Time.Testing;
 using Shouldly;
-using SubscriptionManager.Application.DTOs.Invoices;
 using SubscriptionManager.Application.UseCases.Invoices;
-using SubscriptionManager.Domain.Entities;
-using SubscriptionManager.Domain.Exceptions;
+using SubscriptionManager.Domain.Enums;
 
 namespace UseCases.Tests.Invoices;
 
 public class MarkOverdueInvoicesHandlerTests
 {
-    private static readonly DateTime ReferenceDate = new(2026, 12, 1);
+    // InvoiceBuilder gera o vencimento no dia 10 do mês, à meia-noite.
+    private static readonly DateTime September = new(2026, 9, 1);
 
     [Fact]
     public async Task Success()
     {
-        var first = InvoiceBuilder.Build(referenceMonth: new DateTime(2026, 9, 1));
-        var second = InvoiceBuilder.Build(referenceMonth: new DateTime(2026, 10, 1));
+        var first = InvoiceBuilder.Build(referenceMonth: September);
+        var second = InvoiceBuilder.Build(referenceMonth: September.AddMonths(1));
 
-        var request = new MarkInvoiceAsOverdueRequest(ReferenceDate);
+        var invoiceRepository = new IInvoiceRepositoryBuilder().GetPendingDueBefore(first, second);
 
-        var result = await CreateHandler(first, second).Handle(request);
+        var result = await CreateHandler(At(2026, 12, 1), invoiceRepository).Handle();
 
         result.ShouldBe(2);
-        first.Status.ShouldBe(SubscriptionManager.Domain.Enums.InvoiceStatus.Overdue);
-        second.Status.ShouldBe(SubscriptionManager.Domain.Enums.InvoiceStatus.Overdue);
+        first.Status.ShouldBe(InvoiceStatus.Overdue);
+        second.Status.ShouldBe(InvoiceStatus.Overdue);
     }
 
     [Fact]
     public async Task Handle_ShouldReturnZero_WhenNothingIsDue()
     {
-        var result = await CreateHandler().Handle(new MarkInvoiceAsOverdueRequest(ReferenceDate));
+        var invoiceRepository = new IInvoiceRepositoryBuilder().GetPendingDueBefore();
+
+        var result = await CreateHandler(At(2026, 12, 1), invoiceRepository).Handle();
 
         result.ShouldBe(0);
     }
 
     [Fact]
-    public async Task Handle_ShouldFallBackToTheClock_WhenReferenceDateIsOmitted()
+    public async Task Handle_ShouldLookForInvoicesDueBeforeTheStartOfToday()
     {
-        var invoice = InvoiceBuilder.Build(referenceMonth: new DateTime(2020, 1, 1));
+        var invoiceRepository = new IInvoiceRepositoryBuilder().GetPendingDueBefore();
 
-        var result = await CreateHandler(invoice).Handle(new MarkInvoiceAsOverdueRequest());
+        await CreateHandler(At(2026, 9, 10, hour: 15, minute: 30), invoiceRepository).Handle();
 
-        result.ShouldBe(1);
-        invoice.Status.ShouldBe(SubscriptionManager.Domain.Enums.InvoiceStatus.Overdue);
+        invoiceRepository.VerifyPendingDueBefore(new DateTime(2026, 9, 10));
     }
 
     [Fact]
-    public async Task Handle_ShouldFallBackToTheClock_WhenThereIsNoBodyAtAll()
+    public async Task Handle_ShouldKeepItPending_UntilTheEndOfItsDueDay()
     {
-        var invoice = InvoiceBuilder.Build(referenceMonth: new DateTime(2020, 1, 1));
+        var invoice = InvoiceBuilder.Build(referenceMonth: September);
 
-        var result = await CreateHandler(invoice).Handle(null);
+        var invoiceRepository = new IInvoiceRepositoryBuilder().GetPendingDueBefore(invoice);
 
-        result.ShouldBe(1);
+        await CreateHandler(At(2026, 9, 10, hour: 23, minute: 59), invoiceRepository).Handle();
+
+        invoice.Status.ShouldBe(InvoiceStatus.Pending);
     }
 
     [Fact]
-    public async Task Handle_ShouldValidateBeforeTouchingTheRepository()
+    public async Task Handle_ShouldMarkItOverdue_OnTheDayAfterItsDueDay()
     {
-        var exception = await Should.ThrowAsync<ErrorOnValidationException>(
-            () => CreateHandler().Handle(new MarkInvoiceAsOverdueRequest(default(DateTime))));
+        var invoice = InvoiceBuilder.Build(referenceMonth: September);
 
-        exception.GetErrorMessages().ShouldContain("A data de referência é inválida.");
+        var invoiceRepository = new IInvoiceRepositoryBuilder().GetPendingDueBefore(invoice);
+
+        await CreateHandler(At(2026, 9, 11, hour: 0, minute: 1), invoiceRepository).Handle();
+
+        invoice.Status.ShouldBe(InvoiceStatus.Overdue);
     }
 
-    private static MarkOverdueInvoicesHandler CreateHandler(params Invoice[] invoices)
+    private static DateTimeOffset At(int year, int month, int day, int hour = 0, int minute = 0)
     {
-        var invoiceBuilder = new IInvoiceRepositoryBuilder().GetPendingDueBefore(invoices);
+        return new DateTimeOffset(year, month, day, hour, minute, 0, TimeSpan.Zero);
+    }
 
-        var clock = new FakeTimeProvider(new DateTimeOffset(ReferenceDate, TimeSpan.Zero));
-
-        return new MarkOverdueInvoicesHandler(invoiceBuilder.Build(), IUnitOfWorkBuilder.Build(), clock);
+    private static MarkOverdueInvoicesHandler CreateHandler(DateTimeOffset now, IInvoiceRepositoryBuilder invoiceRepository)
+    {
+        return new MarkOverdueInvoicesHandler(invoiceRepository.Build(), IUnitOfWorkBuilder.Build(), new FakeTimeProvider(now));
     }
 }

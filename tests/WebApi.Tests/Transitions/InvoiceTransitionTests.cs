@@ -146,17 +146,17 @@ public class InvoiceTransitionTests : BaseIntegrationTest
         errors.ShouldContain("A fatura não está em um estado válido para ser cancelada.");
     }
 
-    // A varredura é global: pega toda fatura pendente vencida do banco, que é
-    // compartilhado pela suíte. Por isso os testes de lote usam meses anteriores
-    // a 2027 — o resto da suíte só trabalha de 2027 em diante, então nenhuma
-    // varredura daqui alcança a fatura de outro teste, em qualquer ordem.
+    // A varredura é global e usa o relógio fixo da factory, 1º de janeiro de 2026:
+    // pega toda fatura pendente do banco com vencimento antes dessa data. Por isso
+    // o que deve vencer aqui usa meses de 2018 a 2020, e qualquer fatura de 2026
+    // em diante, de qualquer teste, fica fora do alcance, em qualquer ordem.
 
     [Fact]
     public async Task MarkOverdue_ShouldSweepEveryPendingInvoiceAlreadyDue()
     {
         var invoice = await CreateInvoice(new DateTime(2018, 1, 1));
 
-        var response = await Post("/api/invoices/mark-overdue", new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(1)));
+        var response = await Post("/api/invoices/mark-overdue");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
@@ -175,9 +175,9 @@ public class InvoiceTransitionTests : BaseIntegrationTest
     [Fact]
     public async Task MarkOverdue_ShouldLeaveInvoicesThatAreNotDueYet()
     {
-        var invoice = await CreateInvoice(new DateTime(2019, 1, 1));
+        var invoice = await CreateInvoice(new DateTime(2026, 6, 1));
 
-        var response = await Post("/api/invoices/mark-overdue", new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(-1)));
+        var response = await Post("/api/invoices/mark-overdue");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
@@ -199,7 +199,7 @@ public class InvoiceTransitionTests : BaseIntegrationTest
 
         await Patch($"/api/invoices/{invoice.Id}/pay", new PayInvoiceRequest(invoice.DueDate));
 
-        var response = await Post("/api/invoices/mark-overdue", new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(1)));
+        var response = await Post("/api/invoices/mark-overdue");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
@@ -212,18 +212,6 @@ public class InvoiceTransitionTests : BaseIntegrationTest
             .GetProperty("status")
             .GetString()
             .ShouldBe("Paid");
-    }
-
-    [Fact]
-    public async Task MarkOverdue_ShouldReturnBadRequest_WhenReferenceDateIsInformedButEmpty()
-    {
-        var response = await Post("/api/invoices/mark-overdue", new MarkInvoiceAsOverdueRequest(default(DateTime)));
-
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-
-        var errors = await ReadErrors(response);
-
-        errors.ShouldContain("A data de referência é inválida.");
     }
 
     /// <summary>

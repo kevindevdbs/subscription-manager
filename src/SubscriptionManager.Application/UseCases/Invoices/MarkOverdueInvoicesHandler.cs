@@ -1,6 +1,3 @@
-using SubscriptionManager.Application.DTOs.Invoices;
-using SubscriptionManager.Application.Validators;
-using SubscriptionManager.Domain.Exceptions;
 using SubscriptionManager.Domain.Repositories;
 
 namespace SubscriptionManager.Application.UseCases.Invoices;
@@ -21,15 +18,14 @@ public class MarkOverdueInvoicesHandler
         _timeProvider = timeProvider;
     }
 
-    public async Task<int> Handle(MarkInvoiceAsOverdueRequest? request)
+    public async Task<int> Handle()
     {
-        request ??= new MarkInvoiceAsOverdueRequest();
+        // A data não vem de quem chama: vencimento é consequência do calendário.
+        // Conta a partir do início de hoje porque a fatura vence no fim do dia do
+        // vencimento, não à meia-noite dele.
+        var today = _timeProvider.GetUtcNow().UtcDateTime.Date;
 
-        Validate(request);
-
-        var referenceDate = request.ReferenceDate ?? _timeProvider.GetUtcNow().UtcDateTime;
-
-        var invoices = await _invoiceRepository.GetPendingDueBeforeAsync(referenceDate);
+        var invoices = await _invoiceRepository.GetPendingDueBeforeAsync(today);
 
         var count = 0;
 
@@ -37,26 +33,12 @@ public class MarkOverdueInvoicesHandler
         {
             // A consulta já filtrou por Pending e vencimento passado, então a
             // entidade não recusa a transição nem deixa a fatura como estava.
-            invoice.MarkAsOverdue(referenceDate);
+            invoice.MarkAsOverdue(today);
             count++;
         }
 
         await _unitOfWork.SaveChangesAsync();
 
         return count;
-    }
-
-    private static void Validate(MarkInvoiceAsOverdueRequest request)
-    {
-        var validator = new MarkInvoiceAsOverdueRequestValidator();
-
-        var result = validator.Validate(request);
-
-        if (result.IsValid == false)
-        {
-            var errorMessages = result.Errors.Select(error => error.ErrorMessage).ToList();
-
-            throw new ErrorOnValidationException(errorMessages);
-        }
     }
 }
