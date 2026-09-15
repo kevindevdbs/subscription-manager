@@ -87,38 +87,6 @@ public class InvoiceTransitionTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Overdue_Success()
-    {
-        var invoice = await CreateInvoice(new DateTime(2028, 4, 1));
-
-        var request = new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(1));
-
-        var response = await Patch($"/api/invoices/{invoice.Id}/overdue", request);
-
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-
-        using var json = await ReadJson(response);
-
-        json.RootElement.GetProperty("status").GetString().ShouldBe("Overdue");
-    }
-
-    [Fact]
-    public async Task Overdue_ShouldKeepItPending_WhenTheDueDateHasNotPassedYet()
-    {
-        var invoice = await CreateInvoice(new DateTime(2028, 5, 1));
-
-        var request = new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(-1));
-
-        var response = await Patch($"/api/invoices/{invoice.Id}/overdue", request);
-
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-
-        using var json = await ReadJson(response);
-
-        json.RootElement.GetProperty("status").GetString().ShouldBe("Pending");
-    }
-
-    [Fact]
     public async Task Refund_Success()
     {
         var invoice = await CreateInvoice(new DateTime(2028, 6, 1));

@@ -12,7 +12,6 @@ public class InvoicesController : ControllerBase
     private readonly GenerateMonthlyInvoicesHandler _handler;
     private readonly ListInvoicesHandler _listHandler;
     private readonly PayInvoiceHandler _payHandler;
-    private readonly MarkInvoiceAsOverdueHandler _markAsOverdueHandler;
     private readonly RefundInvoiceHandler _refundHandler;
     private readonly CancelInvoiceHandler _cancelHandler;
     private readonly MarkOverdueInvoicesHandler _markOverdueBatchHandler;
@@ -21,7 +20,6 @@ public class InvoicesController : ControllerBase
         GenerateMonthlyInvoicesHandler handler,
         ListInvoicesHandler listHandler,
         PayInvoiceHandler payHandler,
-        MarkInvoiceAsOverdueHandler markAsOverdueHandler,
         RefundInvoiceHandler refundHandler,
         CancelInvoiceHandler cancelHandler,
         MarkOverdueInvoicesHandler markOverdueBatchHandler)
@@ -30,7 +28,6 @@ public class InvoicesController : ControllerBase
         _handler = handler;
         _listHandler = listHandler;
         _payHandler = payHandler;
-        _markAsOverdueHandler = markAsOverdueHandler;
         _refundHandler = refundHandler;
         _cancelHandler = cancelHandler;
     }
@@ -76,18 +73,6 @@ public class InvoicesController : ControllerBase
     public async Task<IActionResult> Pay(Guid id, [FromBody] PayInvoiceRequest? request = null)
     {
         var invoice = await _payHandler.Handle(id, request);
-
-        return Ok(invoice);
-    }
-
-    [HttpPatch("{id:guid}/overdue")]
-    [ProducesResponseType(typeof(InvoiceResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> MarkAsOverdue(Guid id, [FromBody] MarkInvoiceAsOverdueRequest? request = null)
-    {
-        var invoice = await _markAsOverdueHandler.Handle(id, request);
 
         return Ok(invoice);
     }

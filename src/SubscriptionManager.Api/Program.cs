@@ -50,7 +50,6 @@ builder.Services.AddScoped<ListPlansHandler>();
 builder.Services.AddScoped<ListContractsHandler>();
 
 builder.Services.AddScoped<PayInvoiceHandler>();
-builder.Services.AddScoped<MarkInvoiceAsOverdueHandler>();
 builder.Services.AddScoped<RefundInvoiceHandler>();
 builder.Services.AddScoped<CancelInvoiceHandler>();
 builder.Services.AddScoped<MarkOverdueInvoicesHandler>();
