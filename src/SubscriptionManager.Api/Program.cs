@@ -27,6 +27,8 @@ builder.Services.Configure<OverdueInvoicesJobOptions>(
 
 builder.Services.AddHostedService<OverdueInvoicesJob>();
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();

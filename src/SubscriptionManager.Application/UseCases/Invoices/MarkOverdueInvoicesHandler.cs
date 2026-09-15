@@ -12,11 +12,13 @@ public class MarkOverdueInvoicesHandler
 {
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly TimeProvider _timeProvider;
 
-    public MarkOverdueInvoicesHandler(IInvoiceRepository invoiceRepository, IUnitOfWork unitOfWork)
+    public MarkOverdueInvoicesHandler(IInvoiceRepository invoiceRepository, IUnitOfWork unitOfWork, TimeProvider timeProvider)
     {
         _invoiceRepository = invoiceRepository;
         _unitOfWork = unitOfWork;
+        _timeProvider = timeProvider;
     }
 
     public async Task<int> Handle(MarkInvoiceAsOverdueRequest? request)
@@ -25,7 +27,7 @@ public class MarkOverdueInvoicesHandler
 
         Validate(request);
 
-        var referenceDate = request.ReferenceDate ?? DateTime.UtcNow;
+        var referenceDate = request.ReferenceDate ?? _timeProvider.GetUtcNow().UtcDateTime;
 
         var invoices = await _invoiceRepository.GetPendingDueBeforeAsync(referenceDate);
 

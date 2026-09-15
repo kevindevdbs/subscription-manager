@@ -1,5 +1,6 @@
 using CommonTestUtilities.Entities;
 using CommonTestUtilities.Repositories;
+using Microsoft.Extensions.Time.Testing;
 using Shouldly;
 using SubscriptionManager.Application.DTOs.Invoices;
 using SubscriptionManager.Application.UseCases.Invoices;
@@ -36,7 +37,7 @@ public class MarkOverdueInvoicesHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldFallBackToNow_WhenReferenceDateIsOmitted()
+    public async Task Handle_ShouldFallBackToTheClock_WhenReferenceDateIsOmitted()
     {
         var invoice = InvoiceBuilder.Build(referenceMonth: new DateTime(2020, 1, 1));
 
@@ -47,7 +48,7 @@ public class MarkOverdueInvoicesHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldFallBackToNow_WhenThereIsNoBodyAtAll()
+    public async Task Handle_ShouldFallBackToTheClock_WhenThereIsNoBodyAtAll()
     {
         var invoice = InvoiceBuilder.Build(referenceMonth: new DateTime(2020, 1, 1));
 
@@ -69,6 +70,8 @@ public class MarkOverdueInvoicesHandlerTests
     {
         var invoiceBuilder = new IInvoiceRepositoryBuilder().GetPendingDueBefore(invoices);
 
-        return new MarkOverdueInvoicesHandler(invoiceBuilder.Build(), IUnitOfWorkBuilder.Build());
+        var clock = new FakeTimeProvider(new DateTimeOffset(ReferenceDate, TimeSpan.Zero));
+
+        return new MarkOverdueInvoicesHandler(invoiceBuilder.Build(), IUnitOfWorkBuilder.Build(), clock);
     }
 }
