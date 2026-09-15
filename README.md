@@ -239,8 +239,8 @@ várias instâncias subindo juntas tentariam migrar o mesmo banco ao mesmo tempo
 Consciente, não esquecido:
 
 - **Autenticação e autorização.** A API é aberta.
-- **Agendamento.** `generate` e `mark-overdue` existem como endpoint, mas nada os
-  chama sozinho — falta um hosted service ou cron.
+- **Agendamento da emissão.** O vencimento já roda sozinho, num hosted service
+  diário; a emissão (`generate`) ainda depende de alguém chamar o endpoint.
 - **Régua de cobrança.** `Overdue` e `Suspended` existem e a geração já pula
   contrato suspenso, mas nada liga automaticamente um ao outro (vencer → lembrar
   → suspender → cancelar).

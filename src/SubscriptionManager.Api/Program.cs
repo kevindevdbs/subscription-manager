@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using SubscriptionManager.Api.Configuration;
 using SubscriptionManager.Api.Filters;
+using SubscriptionManager.Api.Jobs;
 using SubscriptionManager.Api.Setup;
 using SubscriptionManager.Application.UseCases.Contracts;
 using SubscriptionManager.Application.UseCases.Customers;
@@ -19,6 +21,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.Configure<OverdueInvoicesJobOptions>(
+    builder.Configuration.GetSection(OverdueInvoicesJobOptions.SectionName));
+
+builder.Services.AddHostedService<OverdueInvoicesJob>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
