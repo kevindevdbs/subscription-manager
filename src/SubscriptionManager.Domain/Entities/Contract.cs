@@ -34,6 +34,16 @@ public class Contract
         Status = ContractStatus.Active;
     }
 
+    /// <summary>
+    /// O contrato só é faturado a partir do mês em que começa.
+    /// </summary>
+    public bool IsBillableIn(DateTime referenceMonth)
+    {
+        var firstDayOfNextMonth = new DateTime(referenceMonth.Year, referenceMonth.Month, 1).AddMonths(1);
+
+        return StartDate < firstDayOfNextMonth;
+    }
+
     public void Suspend()
     {
         if (Status != ContractStatus.Active)

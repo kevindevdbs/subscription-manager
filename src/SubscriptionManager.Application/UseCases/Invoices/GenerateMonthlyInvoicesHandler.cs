@@ -35,6 +35,11 @@ public class GenerateMonthlyInvoicesHandler
 
         foreach (var contract in contracts)
         {
+            if (!contract.IsBillableIn(normalizedMonth))
+            {
+                continue;
+            }
+
             var invoiceExists = await _invoiceRepository.ExistsForContractAndMonthAsync(contract.Id, normalizedMonth);
 
             if (!invoiceExists)
