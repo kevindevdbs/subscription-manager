@@ -172,9 +172,8 @@ Regras que o modelo garante:
 |---|---|---|
 | `POST` | `/api/invoices/generate` | Emite as faturas da competência — `{ referenceMonth }` |
 | `GET` | `/api/invoices` | Lista com filtro `?status=&month=yyyy-MM` |
-| `POST` | `/api/invoices/mark-overdue` | Marca em lote as vencidas — `{ referenceDate? }` |
+| `POST` | `/api/invoices/mark-overdue` | Marca em lote as vencidas até ontem, pelo relógio do servidor |
 | `PATCH` | `/api/invoices/{id}/pay` | Paga — corpo `{ paidAt? }` |
-| `PATCH` | `/api/invoices/{id}/overdue` | Marca vencida — corpo `{ referenceDate? }` |
 | `PATCH` | `/api/invoices/{id}/refund` | Estorna |
 | `PATCH` | `/api/invoices/{id}/cancel` | Cancela |
 
@@ -239,8 +238,8 @@ várias instâncias subindo juntas tentariam migrar o mesmo banco ao mesmo tempo
 Consciente, não esquecido:
 
 - **Autenticação e autorização.** A API é aberta.
-- **Agendamento.** `generate` e `mark-overdue` existem como endpoint, mas nada os
-  chama sozinho — falta um hosted service ou cron.
+- **Agendamento da emissão.** O vencimento já roda sozinho, num hosted service
+  diário; a emissão (`generate`) ainda depende de alguém chamar o endpoint.
 - **Régua de cobrança.** `Overdue` e `Suspended` existem e a geração já pula
   contrato suspenso, mas nada liga automaticamente um ao outro (vencer → lembrar
   → suspender → cancelar).
