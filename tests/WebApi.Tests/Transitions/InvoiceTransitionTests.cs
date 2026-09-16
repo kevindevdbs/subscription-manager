@@ -228,7 +228,8 @@ public class InvoiceTransitionTests : BaseIntegrationTest
         using var planJson = await ReadJson(planResponse);
         var planId = planJson.RootElement.GetProperty("id").GetGuid();
 
-        var contractResponse = await Post("/api/contracts", new CreateContractRequest(customerId, planId, referenceMonth));
+        // Assinatura no mês anterior: o mês em que o contrato começa não é faturado.
+        var contractResponse = await Post("/api/contracts", new CreateContractRequest(customerId, planId, referenceMonth.AddMonths(-1)));
         using var contractJson = await ReadJson(contractResponse);
         var contractId = contractJson.RootElement.GetProperty("id").GetGuid();
 

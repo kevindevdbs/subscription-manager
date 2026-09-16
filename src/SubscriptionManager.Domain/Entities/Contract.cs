@@ -35,13 +35,28 @@ public class Contract
     }
 
     /// <summary>
-    /// O contrato só é faturado a partir do mês em que começa.
+    /// O mês da assinatura não é cobrado: a primeira fatura sai no mês seguinte,
+    /// para o cliente pagar um mês depois de contratar.
     /// </summary>
     public bool IsBillableIn(DateTime referenceMonth)
     {
-        var firstDayOfNextMonth = new DateTime(referenceMonth.Year, referenceMonth.Month, 1).AddMonths(1);
+        var firstDayOfMonth = new DateTime(referenceMonth.Year, referenceMonth.Month, 1);
 
-        return StartDate < firstDayOfNextMonth;
+        return StartDate < firstDayOfMonth;
+    }
+
+    /// <summary>
+    /// A fatura vence no mesmo dia do mês em que o contrato foi assinado.
+    /// </summary>
+    public DateTime DueDateFor(DateTime referenceMonth)
+    {
+        var daysInMonth = DateTime.DaysInMonth(referenceMonth.Year, referenceMonth.Month);
+
+        // Contrato assinado no dia 31 vence no último dia dos meses mais curtos, em
+        // vez de escorregar para o mês seguinte.
+        var dueDay = Math.Min(StartDate.Day, daysInMonth);
+
+        return new DateTime(referenceMonth.Year, referenceMonth.Month, dueDay);
     }
 
     public void Suspend()

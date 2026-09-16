@@ -12,12 +12,16 @@ public class GenerateMonthlyInvoicesHandlerTests
 {
     private static readonly DateTime ReferenceMonth = new(2026, 9, 1);
 
+    // O mês da assinatura não é faturado, então os contratos destes testes começam
+    // no mês anterior à competência.
+    private static readonly DateTime StartDate = new(2026, 8, 15);
+
     [Fact]
     public async Task Success_ShouldGenerateOneInvoicePerActiveContract()
     {
         var plan = PlanBuilder.Build(monthlyPrice: 90);
-        var firstContract = ContractBuilder.Build(planId: plan.Id, startDate: ReferenceMonth);
-        var secondContract = ContractBuilder.Build(planId: plan.Id, startDate: ReferenceMonth);
+        var firstContract = ContractBuilder.Build(planId: plan.Id, startDate: StartDate);
+        var secondContract = ContractBuilder.Build(planId: plan.Id, startDate: StartDate);
 
         var invoiceRepository = new IInvoiceRepositoryBuilder();
 
@@ -30,10 +34,25 @@ public class GenerateMonthlyInvoicesHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ShouldSetTheDueDateToTheDayTheContractStarted()
+    {
+        var plan = PlanBuilder.Build();
+        var contract = ContractBuilder.Build(planId: plan.Id, startDate: StartDate);
+
+        var invoiceRepository = new IInvoiceRepositoryBuilder();
+
+        var handler = CreateHandler(invoiceRepository, plan, contract);
+
+        await handler.Handle(new GenerateInvoiceRequest(ReferenceMonth));
+
+        invoiceRepository.VerifyAddedInvoiceDueOn(new DateTime(2026, 9, 15));
+    }
+
+    [Fact]
     public async Task Handle_ShouldBeIdempotent_WhenInvoiceAlreadyExistsForTheMonth()
     {
         var plan = PlanBuilder.Build();
-        var contract = ContractBuilder.Build(planId: plan.Id, startDate: ReferenceMonth);
+        var contract = ContractBuilder.Build(planId: plan.Id, startDate: StartDate);
 
         var invoiceRepository = new IInvoiceRepositoryBuilder().ExistsForContractAndMonth(contract.Id, ReferenceMonth);
 
@@ -49,7 +68,7 @@ public class GenerateMonthlyInvoicesHandlerTests
     public async Task Handle_ShouldNormalizeReferenceMonthToTheFirstDay()
     {
         var plan = PlanBuilder.Build();
-        var contract = ContractBuilder.Build(planId: plan.Id, startDate: ReferenceMonth);
+        var contract = ContractBuilder.Build(planId: plan.Id, startDate: StartDate);
 
         var invoiceRepository = new IInvoiceRepositoryBuilder().ExistsForContractAndMonth(contract.Id, ReferenceMonth);
 
@@ -58,6 +77,22 @@ public class GenerateMonthlyInvoicesHandlerTests
         var generated = await handler.Handle(new GenerateInvoiceRequest(new DateTime(2026, 9, 23)));
 
         generated.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldSkipContractsThatStartInTheReferenceMonth()
+    {
+        var plan = PlanBuilder.Build();
+        var contract = ContractBuilder.Build(planId: plan.Id, startDate: ReferenceMonth.AddDays(14));
+
+        var invoiceRepository = new IInvoiceRepositoryBuilder();
+
+        var handler = CreateHandler(invoiceRepository, plan, contract);
+
+        var generated = await handler.Handle(new GenerateInvoiceRequest(ReferenceMonth));
+
+        generated.ShouldBe(0);
+        invoiceRepository.VerifyAddedInvoices(0);
     }
 
     [Fact]
@@ -79,7 +114,7 @@ public class GenerateMonthlyInvoicesHandlerTests
     [Fact]
     public async Task Handle_ShouldThrowNotFound_WhenTheContractPlanIsMissing()
     {
-        var contract = ContractBuilder.Build(startDate: ReferenceMonth);
+        var contract = ContractBuilder.Build(startDate: StartDate);
 
         var handler = new GenerateMonthlyInvoicesHandler(
             new IContractRepositoryBuilder().GetActiveContracts(contract).Build(),

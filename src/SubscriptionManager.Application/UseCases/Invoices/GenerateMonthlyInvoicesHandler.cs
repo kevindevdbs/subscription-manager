@@ -53,7 +53,7 @@ public class GenerateMonthlyInvoicesHandler
                 // plano faria dois donos apontarem para o mesmo objeto rastreado e o
                 // SaveChanges quebraria assim que dois contratos usassem o mesmo plano.
                 var amount = new Money(plan.MonthlyPrice.Amount);
-                var invoice = new Invoice(contract.Id, amount, normalizedMonth.AddDays(9), normalizedMonth);
+                var invoice = new Invoice(contract.Id, amount, contract.DueDateFor(normalizedMonth), normalizedMonth);
                 await _invoiceRepository.AddAsync(invoice);
                 invoicesCount++;
             }

@@ -82,7 +82,7 @@ public class DeactivatePlanTests : BaseIntegrationTest
         var planId = await CreatePlan();
         var customerId = await CreateCustomer();
 
-        var contractResponse = await Post("/api/contracts", new CreateContractRequest(customerId, planId, referenceMonth));
+        var contractResponse = await Post("/api/contracts", new CreateContractRequest(customerId, planId, referenceMonth.AddMonths(-1)));
         using var contractJson = await ReadJson(contractResponse);
         var contractId = contractJson.RootElement.GetProperty("id").GetGuid();
 
