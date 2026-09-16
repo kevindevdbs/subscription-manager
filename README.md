@@ -240,6 +240,14 @@ varredura só alcança fatura pendente, então repetir uma execução não dupli
 estraga nada. A varredura também não aceita data de quem chama — quando aceitava,
 bastava mandar 2099 para vencer todas as faturas de uma vez.
 
+**O ciclo de cobrança conta do dia da assinatura, não de um dia fixo do mês.** As
+faturas da competência são emitidas no dia 1º e vencem no mesmo dia do mês em que o
+contrato foi assinado; quem assina dia 15 de setembro recebe a primeira fatura em 1º
+de outubro, vencendo em 15 de outubro. O mês da assinatura não é cobrado, e é isso
+que evita a fatura que nasce vencida: com vencimento fixo no dia 10, todo contrato
+assinado depois do dia 10 já ganhava uma fatura vencida. Contrato assinado no dia 31
+vence no último dia dos meses mais curtos, em vez de escorregar para o mês seguinte.
+
 ---
 
 ## O que ficou de fora
@@ -247,11 +255,6 @@ bastava mandar 2099 para vencer todas as faturas de uma vez.
 Consciente, não esquecido:
 
 - **Autenticação e autorização.** A API é aberta.
-- **Primeira fatura de contrato assinado depois do vencimento.** A emissão cobra o
-  mês inteiro com vencimento no dia 10, então um contrato assinado no dia 15 recebe
-  uma fatura que já nasce vencida. Resolver isso é escolher uma regra de cobrança —
-  vencimento proporcional, primeiro mês sem cobrança ou rateio —, não um detalhe
-  técnico.
 - **Horário fixo dos jobs.** Eles contam o intervalo a partir da subida da API, e
   não rodam num horário marcado do relógio.
 - **Régua de cobrança.** `Overdue` e `Suspended` existem e a geração já pula
