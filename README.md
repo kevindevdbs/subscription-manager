@@ -227,6 +227,14 @@ emitida. Isso saiu da correção de um bug: `Money` é *owned entity* do plano e
 fatura, e compartilhar a instância rastreada quebrava o `SaveChanges` assim que
 dois contratos ativos usavam o mesmo plano.
 
+**O healthcheck espera o banco, não o servidor.** Numa subida com o volume já
+existente, o SQL Server aceita conexão alguns segundos antes de terminar de
+recuperar o banco da aplicação. Nessa janela, o EF Core pergunta se o banco existe,
+não consegue abri-lo, conclui que não existe e manda `CREATE DATABASE` — que falha
+porque ele existe. Medindo, a janela foi de 16 segundos. O healthcheck agora só fica
+verde quando o banco está recuperado, e continua funcionando na primeira subida,
+quando ele ainda não existe.
+
 **Migration na subida é exceção, não padrão.** O `docker compose` liga
 `Database__MigrateOnStartup` para o projeto ficar utilizável com um comando. Fora
 dele o padrão é desligado, porque em ambiente real migration é passo de deploy —
