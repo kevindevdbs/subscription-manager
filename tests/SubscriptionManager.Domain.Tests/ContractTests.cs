@@ -124,4 +124,28 @@ public class ContractTests
 
         Should.Throw<ConflictException>(() => contract.Reactivate());
     }
+
+    [Fact]
+    public void IsBillableIn_MonthTheContractStarts_ReturnsTrue()
+    {
+        var contract = new Contract(Guid.NewGuid(), Guid.NewGuid(), new DateTime(2026, 9, 20));
+
+        contract.IsBillableIn(new DateTime(2026, 9, 1)).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IsBillableIn_MonthAfterTheContractStarts_ReturnsTrue()
+    {
+        var contract = new Contract(Guid.NewGuid(), Guid.NewGuid(), new DateTime(2026, 9, 20));
+
+        contract.IsBillableIn(new DateTime(2026, 10, 1)).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IsBillableIn_MonthBeforeTheContractStarts_ReturnsFalse()
+    {
+        var contract = new Contract(Guid.NewGuid(), Guid.NewGuid(), new DateTime(2026, 9, 1));
+
+        contract.IsBillableIn(new DateTime(2026, 8, 31)).ShouldBeFalse();
+    }
 }

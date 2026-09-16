@@ -4,52 +4,19 @@ using SubscriptionManager.Application.UseCases.Invoices;
 
 namespace SubscriptionManager.Api.Jobs;
 
-public class OverdueInvoicesJob : BackgroundService
+public class OverdueInvoicesJob : RecurringJob
 {
-    private readonly ILogger<OverdueInvoicesJob> _logger;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IOptions<OverdueInvoicesJobOptions> _options;
-
-    public OverdueInvoicesJob(ILogger<OverdueInvoicesJob> logger, IServiceScopeFactory serviceScopeFactory, IOptions<OverdueInvoicesJobOptions> options)
+    public OverdueInvoicesJob(IServiceScopeFactory serviceScopeFactory, IOptions<OverdueInvoicesJobOptions> options, ILogger<OverdueInvoicesJob> logger)
+        : base(serviceScopeFactory, options.Value, logger)
     {
-        _logger = logger;
-        _serviceScopeFactory = serviceScopeFactory;
-        _options = options;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task RunAsync(IServiceProvider services)
     {
-        if (!_options.Value.Enabled)
-        {
-            return;
-        }
+        var handler = services.GetRequiredService<MarkOverdueInvoicesHandler>();
 
-        await RunOnce(stoppingToken);
+        var count = await handler.Handle();
 
-        using var timer = new PeriodicTimer(_options.Value.Interval);
-
-        while (await timer.WaitForNextTickAsync(stoppingToken))
-        {
-            await RunOnce(stoppingToken);
-        }
-    }
-
-    private async Task RunOnce(CancellationToken stoppingToken)
-    {
-        try
-        {
-            await using var scope = _serviceScopeFactory.CreateAsyncScope();
-
-            var handler = scope.ServiceProvider.GetRequiredService<MarkOverdueInvoicesHandler>();
-
-            var count = await handler.Handle();
-
-            _logger.LogInformation("{Count} fatura(s) marcada(s) como vencida(s).", count);
-        }
-        catch (Exception exception) when (!stoppingToken.IsCancellationRequested)
-        {
-            // Sem este catch, uma falha do banco derrubaria a API inteira.
-            _logger.LogError(exception, "Falha ao marcar faturas vencidas. Nova tentativa no próximo ciclo.");
-        }
+        Logger.LogInformation("{Count} fatura(s) marcada(s) como vencida(s).", count);
     }
 }

@@ -24,7 +24,8 @@ massa de demonstração. Quando terminar, abra:
 
 A base já vem com 4 planos (um deles descontinuado), 3 clientes, 4 contratos (um
 suspenso) e 3 meses de faturas em estados diferentes — dá para exercitar os
-filtros e as transições sem cadastrar nada antes.
+filtros e as transições sem cadastrar nada antes. Logo na subida, os jobs em
+segundo plano emitem as faturas do mês corrente e marcam as vencidas.
 
 Para derrubar tudo, incluindo o volume do banco:
 
@@ -231,6 +232,14 @@ dois contratos ativos usavam o mesmo plano.
 dele o padrão é desligado, porque em ambiente real migration é passo de deploy —
 várias instâncias subindo juntas tentariam migrar o mesmo banco ao mesmo tempo.
 
+**Emissão e vencimento rodam sozinhos, e a data vem do relógio.** Dois jobs em
+segundo plano (`BackgroundService` com `PeriodicTimer`) emitem as faturas do mês
+corrente e marcam as vencidas, uma vez na subida e depois a cada 24 horas. Os dois
+são idempotentes: a emissão pula contrato que já tem fatura na competência e a
+varredura só alcança fatura pendente, então repetir uma execução não duplica nem
+estraga nada. A varredura também não aceita data de quem chama — quando aceitava,
+bastava mandar 2099 para vencer todas as faturas de uma vez.
+
 ---
 
 ## O que ficou de fora
@@ -238,8 +247,13 @@ várias instâncias subindo juntas tentariam migrar o mesmo banco ao mesmo tempo
 Consciente, não esquecido:
 
 - **Autenticação e autorização.** A API é aberta.
-- **Agendamento da emissão.** O vencimento já roda sozinho, num hosted service
-  diário; a emissão (`generate`) ainda depende de alguém chamar o endpoint.
+- **Primeira fatura de contrato assinado depois do vencimento.** A emissão cobra o
+  mês inteiro com vencimento no dia 10, então um contrato assinado no dia 15 recebe
+  uma fatura que já nasce vencida. Resolver isso é escolher uma regra de cobrança —
+  vencimento proporcional, primeiro mês sem cobrança ou rateio —, não um detalhe
+  técnico.
+- **Horário fixo dos jobs.** Eles contam o intervalo a partir da subida da API, e
+  não rodam num horário marcado do relógio.
 - **Régua de cobrança.** `Overdue` e `Suspended` existem e a geração já pula
   contrato suspenso, mas nada liga automaticamente um ao outro (vencer → lembrar
   → suspender → cancelar).
