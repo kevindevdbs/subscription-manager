@@ -48,6 +48,11 @@ public class IInvoiceRepositoryBuilder
         return this;
     }
 
+    public void VerifyAddedInvoiceDueOn(DateTime dueDate)
+    {
+        _mock.Verify(repository => repository.AddAsync(It.Is<Invoice>(invoice => invoice.DueDate == dueDate)), Times.Once);
+    }
+
     public void VerifyPendingDueBefore(DateTime referenceDate)
     {
         _mock.Verify(repository => repository.GetPendingDueBeforeAsync(referenceDate), Times.Once);
