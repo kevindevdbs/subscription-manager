@@ -22,15 +22,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.Configure<GenerateInvoicesJobOptions>(
-    builder.Configuration.GetSection(GenerateInvoicesJobOptions.SectionName));
+builder.Services.Configure<BillingJobOptions>(
+    builder.Configuration.GetSection(BillingJobOptions.SectionName));
 
-builder.Services.AddHostedService<GenerateInvoicesJob>();
-
-builder.Services.Configure<OverdueInvoicesJobOptions>(
-    builder.Configuration.GetSection(OverdueInvoicesJobOptions.SectionName));
-
-builder.Services.AddHostedService<OverdueInvoicesJob>();
+builder.Services.AddHostedService<BillingJob>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 
