@@ -44,6 +44,14 @@ dotnet run --project src/SubscriptionManager.Api
 Nesse caminho as migrations não são aplicadas na subida e não há seed — o banco
 começa vazio.
 
+### Front-end
+
+Há um painel em Next.js em [`web/`](web/) para operar a API pela tela — clientes,
+planos, contratos e faturas, com as transições de cada um. Ele lê por Server
+Components e escreve por Server Actions, falando com a API de servidor para
+servidor, sem CORS nem biblioteca de cache. Com a stack no ar, veja
+[`web/README.md`](web/README.md).
+
 ---
 
 ## Testes
