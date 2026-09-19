@@ -1,16 +1,14 @@
 import { apiGet } from "@/lib/api";
-import type { Invoice } from "@/lib/types";
+import type { Contract, Customer, Invoice } from "@/lib/types";
 import { invoiceStatusLabel, invoiceStatusOptions } from "@/lib/types";
 import { formatDate, formatMoney, formatMonth } from "@/lib/format";
 import {
-  Card,
   EmptyState,
   InvoiceStatusBadge,
   PageHeader,
 } from "@/components/ui";
 import { ApiDown } from "@/components/api-down";
 import { ActionButton } from "@/components/action-button";
-import { InvoiceToolbar } from "./toolbar";
 import { cancelInvoice, payInvoice, refundInvoice } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -18,18 +16,26 @@ export const dynamic = "force-dynamic";
 export default async function InvoicesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; month?: string }>;
+  searchParams: Promise<{ status?: string; month?: string; customer?: string }>;
 }) {
-  const { status = "", month = "" } = await searchParams;
+  const { status = "", month = "", customer = "" } = await searchParams;
 
+  // status e month o back-end filtra; customer é cruzado aqui, porque a API
+  // filtra fatura por situação e competência, não por cliente.
   const query = new URLSearchParams();
   if (status) query.set("status", status);
   if (month) query.set("month", month);
   const suffix = query.toString() ? `?${query.toString()}` : "";
 
+  let customers: Customer[];
+  let contracts: Contract[];
   let invoices: Invoice[];
   try {
-    invoices = await apiGet<Invoice[]>(`/api/invoices${suffix}`);
+    [customers, contracts, invoices] = await Promise.all([
+      apiGet<Customer[]>("/api/customers"),
+      apiGet<Contract[]>("/api/contracts"),
+      apiGet<Invoice[]>(`/api/invoices${suffix}`),
+    ]);
   } catch {
     return (
       <>
@@ -39,24 +45,41 @@ export default async function InvoicesPage({
     );
   }
 
+  const customerOfContract = new Map(contracts.map((c) => [c.id, c.customerId]));
+  const customerName = new Map(customers.map((c) => [c.id, c.name]));
+
+  const rows = customer
+    ? invoices.filter(
+        (invoice) => customerOfContract.get(invoice.contractId) === customer,
+      )
+    : invoices;
+
   return (
     <>
       <PageHeader
         title="Faturas"
-        description="A emissão e o vencimento rodam sozinhos todo dia; aqui dá para forçar na mão e registrar pagamentos."
+        description="A emissão e o vencimento rodam sozinhos todo dia. Aqui você acompanha e registra pagamentos."
       />
-
-      <Card className="mb-6">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted">
-          Operações em lote
-        </h2>
-        <InvoiceToolbar />
-      </Card>
 
       <form
         method="get"
         className="mb-6 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-surface p-4"
       >
+        <label className="block">
+          <span className="mb-1.5 block text-sm text-muted">Cliente</span>
+          <select
+            name="customer"
+            defaultValue={customer}
+            className="rounded-md border border-border bg-surface-2 px-3 py-2 text-sm outline-none focus:border-accent"
+          >
+            <option value="">Todos</option>
+            {customers.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="block">
           <span className="mb-1.5 block text-sm text-muted">Situação</span>
           <select
@@ -89,13 +112,14 @@ export default async function InvoicesPage({
         </button>
       </form>
 
-      {invoices.length === 0 ? (
+      {rows.length === 0 ? (
         <EmptyState>Nenhuma fatura para o filtro atual.</EmptyState>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-surface text-left text-muted">
               <tr>
+                <th className="px-4 py-3 font-medium">Cliente</th>
                 <th className="px-4 py-3 font-medium">Competência</th>
                 <th className="px-4 py-3 font-medium">Valor</th>
                 <th className="px-4 py-3 font-medium">Vencimento</th>
@@ -104,8 +128,13 @@ export default async function InvoicesPage({
               </tr>
             </thead>
             <tbody>
-              {invoices.map((invoice) => (
+              {rows.map((invoice) => (
                 <tr key={invoice.id} className="border-t border-border">
+                  <td className="px-4 py-3">
+                    {customerName.get(
+                      customerOfContract.get(invoice.contractId) ?? "",
+                    ) ?? "—"}
+                  </td>
                   <td className="px-4 py-3 capitalize">
                     {formatMonth(invoice.referenceMonth)}
                   </td>
