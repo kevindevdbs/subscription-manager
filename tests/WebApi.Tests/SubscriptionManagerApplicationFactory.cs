@@ -33,8 +33,7 @@ public class SubscriptionManagerApplicationFactory : WebApplicationFactory<Progr
                 var parameters = new Dictionary<string, string?>
                 {
                     ["ConnectionStrings:DefaultConnection"] = _sqlServerContainer.GetConnectionString(),
-                    ["GenerateInvoicesJob:Enabled"] = "false",
-                    ["OverdueInvoicesJob:Enabled"] = "false"
+                    ["BillingJob:Enabled"] = "false"
                 };
 
                 configuration.AddInMemoryCollection(parameters);

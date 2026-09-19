@@ -240,13 +240,16 @@ quando ele ainda não existe.
 dele o padrão é desligado, porque em ambiente real migration é passo de deploy —
 várias instâncias subindo juntas tentariam migrar o mesmo banco ao mesmo tempo.
 
-**Emissão e vencimento rodam sozinhos, e a data vem do relógio.** Dois jobs em
-segundo plano (`BackgroundService` com `PeriodicTimer`) emitem as faturas do mês
-corrente e marcam as vencidas, uma vez na subida e depois a cada 24 horas. Os dois
-são idempotentes: a emissão pula contrato que já tem fatura na competência e a
-varredura só alcança fatura pendente, então repetir uma execução não duplica nem
-estraga nada. A varredura também não aceita data de quem chama — quando aceitava,
-bastava mandar 2099 para vencer todas as faturas de uma vez.
+**Emissão e vencimento rodam sozinhos, e a data vem do relógio.** Uma rotina de
+faturamento em segundo plano (`BackgroundService` com `PeriodicTimer`) emite as
+faturas do mês corrente e, na sequência, marca as vencidas — uma vez na subida e
+depois a cada 24 horas. A ordem importa e é o motivo de ser um job só: varrer
+depois de gerar faz uma fatura recém-emitida com vencimento já passado vencer no
+mesmo ciclo, em vez de esperar o próximo. Os dois passos são idempotentes: a
+emissão pula contrato que já tem fatura na competência e a varredura só alcança
+fatura pendente, então repetir a rotina não duplica nem estraga nada. A varredura
+também não aceita data de quem chama — quando aceitava, bastava mandar 2099 para
+vencer todas as faturas de uma vez.
 
 **O ciclo de cobrança conta do dia da assinatura, não de um dia fixo do mês.** As
 faturas da competência são emitidas no dia 1º e vencem no mesmo dia do mês em que o
