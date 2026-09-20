@@ -1,5 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { cn } from "cn";
+import { Card as ShadCard } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { ContractStatus, InvoiceStatus } from "@/lib/types";
 import { contractStatusLabel, invoiceStatusLabel } from "@/lib/types";
 
@@ -15,9 +19,9 @@ export function PageHeader({
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-semibold">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {description && (
-          <p className="mt-1 text-sm text-muted">{description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         )}
       </div>
       {action}
@@ -32,61 +36,41 @@ export function Card({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div
-      className={`rounded-lg border border-border bg-surface p-6 ${className}`}
-    >
-      {children}
-    </div>
-  );
+  return <ShadCard className={cn("p-6", className)}>{children}</ShadCard>;
 }
 
 export function EmptyState({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-border bg-surface/50 p-10 text-center text-sm text-muted">
+    <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
       {children}
     </div>
   );
 }
 
-const badgeStyles: Record<string, string> = {
-  green: "bg-green-500/10 text-green-400 border-green-500/30",
-  amber: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-  red: "bg-red-500/10 text-red-400 border-red-500/30",
-  gray: "bg-white/5 text-muted border-border",
-  blue: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-};
+const contractVariant = {
+  Active: "success",
+  Suspended: "warning",
+  Cancelled: "secondary",
+} as const;
 
-function Badge({ tone, children }: { tone: string; children: ReactNode }) {
+export function ContractStatusBadge({ status }: { status: ContractStatus }) {
   return (
-    <span
-      className={`inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium ${badgeStyles[tone]}`}
-    >
-      {children}
-    </span>
+    <Badge variant={contractVariant[status]}>{contractStatusLabel[status]}</Badge>
   );
 }
 
-const contractTone: Record<ContractStatus, string> = {
-  Active: "green",
-  Suspended: "amber",
-  Cancelled: "gray",
-};
-
-export function ContractStatusBadge({ status }: { status: ContractStatus }) {
-  return <Badge tone={contractTone[status]}>{contractStatusLabel[status]}</Badge>;
-}
-
-const invoiceTone: Record<InvoiceStatus, string> = {
-  Pending: "amber",
-  Paid: "green",
-  Overdue: "red",
-  Cancelled: "gray",
-  Refunded: "blue",
-};
+const invoiceVariant = {
+  Pending: "warning",
+  Paid: "success",
+  Overdue: "destructive",
+  Cancelled: "secondary",
+  Refunded: "info",
+} as const;
 
 export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
-  return <Badge tone={invoiceTone[status]}>{invoiceStatusLabel[status]}</Badge>;
+  return (
+    <Badge variant={invoiceVariant[status]}>{invoiceStatusLabel[status]}</Badge>
+  );
 }
 
 export function LinkButton({
@@ -97,11 +81,8 @@ export function LinkButton({
   children: ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      className="rounded-md border border-accent bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-background"
-    >
+    <Button nativeButton={false} render={<Link href={href} />}>
       {children}
-    </Link>
+    </Button>
   );
 }
