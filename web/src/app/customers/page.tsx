@@ -4,6 +4,15 @@ import type { Customer } from "@/lib/types";
 import { formatDate } from "@/lib/format";
 import { Card, EmptyState, PageHeader } from "@/components/ui";
 import { ApiDown } from "@/components/api-down";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CreateCustomerForm } from "./create-form";
 
 export const dynamic = "force-dynamic";
@@ -23,13 +32,10 @@ export default async function CustomersPage() {
 
   return (
     <>
-      <PageHeader
-        title="Clientes"
-        description="Quem contrata os planos."
-      />
+      <PageHeader title="Clientes" description="Quem contrata os planos." />
 
       <Card className="mb-8">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Novo cliente
         </h2>
         <CreateCustomerForm />
@@ -38,40 +44,44 @@ export default async function CustomersPage() {
       {customers.length === 0 ? (
         <EmptyState>Nenhum cliente cadastrado ainda.</EmptyState>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-surface text-left text-muted">
-              <tr>
-                <th className="px-4 py-3 font-medium">Nome</th>
-                <th className="px-4 py-3 font-medium">E-mail</th>
-                <th className="px-4 py-3 font-medium">Documento</th>
-                <th className="px-4 py-3 font-medium">Desde</th>
-                <th className="px-4 py-3 font-medium text-right">Faturas</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="rounded-xl border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>E-mail</TableHead>
+                <TableHead>Documento</TableHead>
+                <TableHead>Desde</TableHead>
+                <TableHead className="text-right">Faturas</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {customers.map((customer) => (
-                <tr key={customer.id} className="border-t border-border">
-                  <td className="px-4 py-3">{customer.name}</td>
-                  <td className="px-4 py-3 text-muted">{customer.email}</td>
-                  <td className="px-4 py-3 font-mono text-muted">
+                <TableRow key={customer.id}>
+                  <TableCell className="font-medium">{customer.name}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {customer.email}
+                  </TableCell>
+                  <TableCell className="font-mono text-muted-foreground">
                     {customer.document}
-                  </td>
-                  <td className="px-4 py-3 text-muted">
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
                     {formatDate(customer.createdAt)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/invoices?customer=${customer.id}`}
-                      className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-accent hover:text-accent"
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      nativeButton={false}
+                      render={<Link href={`/invoices?customer=${customer.id}`} />}
                     >
                       Ver faturas
-                    </Link>
-                  </td>
-                </tr>
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </>

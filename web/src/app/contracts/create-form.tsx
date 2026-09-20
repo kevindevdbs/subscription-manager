@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import type { ActionState } from "@/components/form";
-import { Field, FormErrors, SelectField, SubmitButton } from "@/components/form";
+import { Field, FormErrors, FormSelect, SubmitButton } from "@/components/form";
 import type { Customer, Plan } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
 import { createContract } from "./actions";
@@ -30,12 +30,12 @@ export function CreateContractForm({
 
   return (
     <form ref={formRef} action={action} className="grid gap-4 sm:grid-cols-3">
-      <SelectField
+      <FormSelect
         label="Cliente"
         name="customerId"
         options={customers.map((c) => ({ value: c.id, label: c.name }))}
       />
-      <SelectField
+      <FormSelect
         label="Plano"
         name="planId"
         options={plans

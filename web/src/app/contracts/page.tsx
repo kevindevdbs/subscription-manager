@@ -9,6 +9,14 @@ import {
 } from "@/components/ui";
 import { ApiDown } from "@/components/api-down";
 import { ActionButton } from "@/components/action-button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CreateContractForm } from "./create-form";
 import {
   cancelContract,
@@ -49,13 +57,13 @@ export default async function ContractsPage() {
       />
 
       <Card className="mb-8">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Novo contrato
         </h2>
         {canCreate ? (
           <CreateContractForm customers={customers} plans={plans} />
         ) : (
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             É preciso ter ao menos um cliente e um plano ativo para criar um
             contrato.
           </p>
@@ -65,40 +73,40 @@ export default async function ContractsPage() {
       {contracts.length === 0 ? (
         <EmptyState>Nenhum contrato ainda.</EmptyState>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-surface text-left text-muted">
-              <tr>
-                <th className="px-4 py-3 font-medium">Cliente</th>
-                <th className="px-4 py-3 font-medium">Plano</th>
-                <th className="px-4 py-3 font-medium">Início</th>
-                <th className="px-4 py-3 font-medium">Situação</th>
-                <th className="px-4 py-3 font-medium text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="rounded-xl border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Plano</TableHead>
+                <TableHead>Início</TableHead>
+                <TableHead>Situação</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {contracts.map((contract) => {
                 const plan = planById.get(contract.planId);
                 return (
-                  <tr key={contract.id} className="border-t border-border">
-                    <td className="px-4 py-3">
+                  <TableRow key={contract.id}>
+                    <TableCell className="font-medium">
                       {customerName.get(contract.customerId) ?? "—"}
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       {plan ? plan.name : "—"}
                       {plan && (
-                        <span className="ml-2 font-mono text-xs text-muted">
+                        <span className="ml-2 font-mono text-xs text-muted-foreground">
                           {formatMoney(plan.monthlyPrice)}
                         </span>
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-muted">
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
                       {formatDate(contract.startDate)}
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <ContractStatusBadge status={contract.status} />
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex justify-end gap-2">
                         {contract.status === "Active" && (
                           <ActionButton
@@ -124,12 +132,12 @@ export default async function ContractsPage() {
                           />
                         )}
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </>

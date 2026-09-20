@@ -21,10 +21,10 @@ function Stat({ label, value, href }: { label: string; value: number; href: stri
   return (
     <Link
       href={href}
-      className="rounded-lg border border-border bg-surface p-6 transition-colors hover:border-accent/60"
+      className="rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary/60"
     >
-      <div className="font-mono text-3xl font-bold text-accent">{value}</div>
-      <div className="mt-1 text-sm text-muted">{label}</div>
+      <div className="font-mono text-3xl font-bold text-primary">{value}</div>
+      <div className="mt-1 text-sm text-muted-foreground">{label}</div>
     </Link>
   );
 }
@@ -65,23 +65,29 @@ export default async function DashboardPage() {
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted">A receber (pendentes)</span>
+            <span className="text-sm text-muted-foreground">
+              A receber (pendentes)
+            </span>
             <InvoiceStatusBadge status="Pending" />
           </div>
           <div className="mt-2 font-mono text-2xl font-bold">
             {formatMoney(pending.reduce((sum, i) => sum + i.amount, 0))}
           </div>
-          <div className="mt-1 text-xs text-muted">{pending.length} fatura(s)</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {pending.length} fatura(s)
+          </div>
         </Card>
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted">Em atraso</span>
+            <span className="text-sm text-muted-foreground">Em atraso</span>
             <InvoiceStatusBadge status="Overdue" />
           </div>
-          <div className="mt-2 font-mono text-2xl font-bold text-red-400">
+          <div className="mt-2 font-mono text-2xl font-bold text-destructive">
             {formatMoney(overdueTotal)}
           </div>
-          <div className="mt-1 text-xs text-muted">{overdue.length} fatura(s)</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {overdue.length} fatura(s)
+          </div>
         </Card>
       </div>
     </>

@@ -1,7 +1,17 @@
 "use client";
 
+import { useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import type { ReactNode } from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type ActionState = { errors: string[] } | { ok: true } | null;
 
@@ -23,51 +33,73 @@ export function Field({
   step?: string;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-sm text-muted">{label}</span>
-      <input
+    <div className="grid gap-1.5">
+      <Label htmlFor={name}>{label}</Label>
+      <Input
+        id={name}
         name={name}
         type={type}
         required={required}
         defaultValue={defaultValue}
         placeholder={placeholder}
         step={step}
-        className="w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-sm outline-none focus:border-accent"
       />
-    </label>
+    </div>
   );
 }
 
-export function SelectField({
+// Sentinela para a opção "todos": o Base UI, como o Radix, não aceita item com
+// value vazio, mas o filtro precisa mandar "" na query para dizer "sem filtro".
+const ALL = "__all__";
+
+// Espelha o valor do Select do shadcn num input hidden, para o FormData (Server
+// Action) e o form GET nativo lerem o valor sem depender do Base UI.
+export function FormSelect({
   label,
   name,
   options,
-  required = true,
+  placeholder = "Selecione…",
+  defaultValue = "",
+  includeAll,
 }: {
   label: string;
   name: string;
   options: { value: string; label: string }[];
-  required?: boolean;
+  placeholder?: string;
+  defaultValue?: string;
+  includeAll?: string;
 }) {
+  const initial =
+    defaultValue === "" && includeAll !== undefined ? ALL : defaultValue;
+  const [value, setValue] = useState(initial);
+  const submitted = value === ALL ? "" : value;
+
+  // O Base UI, ao contrário do Radix, usa este mapa para o gatilho exibir o
+  // rótulo do item selecionado em vez do valor cru.
+  const items: Record<string, string> = {};
+  if (includeAll !== undefined) items[ALL] = includeAll;
+  for (const option of options) items[option.value] = option.label;
+
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-sm text-muted">{label}</span>
-      <select
-        name={name}
-        required={required}
-        defaultValue=""
-        className="w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-sm outline-none focus:border-accent"
-      >
-        <option value="" disabled>
-          Selecione…
-        </option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="grid gap-1.5">
+      <Label>{label}</Label>
+      <input type="hidden" name={name} value={submitted} />
+      <Select items={items} value={value} onValueChange={(v) => setValue(v ?? "")}>
+        <SelectTrigger className="w-full min-w-40">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {includeAll !== undefined && (
+            <SelectItem value={ALL}>{includeAll}</SelectItem>
+          )}
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
@@ -75,13 +107,9 @@ export function SubmitButton({ children }: { children: ReactNode }) {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-md border border-accent bg-accent px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
-    >
+    <Button type="submit" disabled={pending}>
       {pending ? "Enviando…" : children}
-    </button>
+    </Button>
   );
 }
 
@@ -91,7 +119,7 @@ export function FormErrors({ state }: { state: ActionState }) {
   }
 
   return (
-    <ul className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+    <ul className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
       {state.errors.map((error) => (
         <li key={error}>{error}</li>
       ))}

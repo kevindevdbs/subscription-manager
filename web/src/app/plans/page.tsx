@@ -4,6 +4,14 @@ import { formatMoney } from "@/lib/format";
 import { Card, EmptyState, PageHeader } from "@/components/ui";
 import { ApiDown } from "@/components/api-down";
 import { ActionButton } from "@/components/action-button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CreatePlanForm } from "./create-form";
 import { deactivatePlan } from "./actions";
 
@@ -30,7 +38,7 @@ export default async function PlansPage() {
       />
 
       <Card className="mb-8">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Novo plano
         </h2>
         <CreatePlanForm />
@@ -39,27 +47,27 @@ export default async function PlansPage() {
       {plans.length === 0 ? (
         <EmptyState>Nenhum plano cadastrado ainda.</EmptyState>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-surface text-left text-muted">
-              <tr>
-                <th className="px-4 py-3 font-medium">Plano</th>
-                <th className="px-4 py-3 font-medium">Mensalidade</th>
-                <th className="px-4 py-3 font-medium">Situação</th>
-                <th className="px-4 py-3 font-medium text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="rounded-xl border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Plano</TableHead>
+                <TableHead>Mensalidade</TableHead>
+                <TableHead>Situação</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {plans.map((plan) => (
-                <tr key={plan.id} className="border-t border-border">
-                  <td className="px-4 py-3">{plan.name}</td>
-                  <td className="px-4 py-3 font-mono">
+                <TableRow key={plan.id}>
+                  <TableCell className="font-medium">{plan.name}</TableCell>
+                  <TableCell className="font-mono">
                     {formatMoney(plan.monthlyPrice)}
-                  </td>
-                  <td className="px-4 py-3 text-muted">
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
                     {plan.isActive ? "Ativo" : "Desativado"}
-                  </td>
-                  <td className="px-4 py-3 text-right">
+                  </TableCell>
+                  <TableCell className="text-right">
                     {plan.isActive && (
                       <ActionButton
                         action={deactivatePlan}
@@ -69,11 +77,11 @@ export default async function PlansPage() {
                         confirmMessage={`Desativar o plano "${plan.name}"?`}
                       />
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </>
