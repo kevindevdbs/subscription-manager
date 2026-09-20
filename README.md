@@ -5,7 +5,7 @@ sistema emite as faturas mensais e controla o ciclo de vida de contratos e
 faturas até o pagamento, o vencimento ou o cancelamento.
 
 Construída em **.NET 10** com Clean Architecture, EF Core e SQL Server.
-**251 testes**, incluindo integração real contra banco em container.
+**247 testes**, incluindo integração real contra banco em container.
 
 ---
 
@@ -24,8 +24,8 @@ massa de demonstração. Quando terminar, abra:
 
 A base já vem com 4 planos (um deles descontinuado), 3 clientes, 4 contratos (um
 suspenso) e 3 meses de faturas em estados diferentes — dá para exercitar os
-filtros e as transições sem cadastrar nada antes. Logo na subida, os jobs em
-segundo plano emitem as faturas do mês corrente e marcam as vencidas.
+filtros e as transições sem cadastrar nada antes. Logo na subida, uma rotina de
+faturamento em segundo plano emite as faturas do mês corrente e marca as vencidas.
 
 Para derrubar tudo, incluindo o volume do banco:
 
@@ -62,11 +62,11 @@ dotnet test
 
 | Projeto | Testes | O que cobre |
 |---|---:|---|
-| `SubscriptionManager.Domain.Tests` | 66 | Invariantes das entidades e do value object `Money` |
-| `Validators.Tests` | 44 | Regras do FluentValidation |
-| `UseCases.Tests` | 82 | Handlers com repositórios em mock |
-| `WebApi.Tests` | 59 | HTTP de ponta a ponta contra SQL Server real |
-| **Total** | **251** | |
+| `SubscriptionManager.Domain.Tests` | 72 | Invariantes das entidades e do value object `Money` |
+| `Validators.Tests` | 41 | Regras do FluentValidation |
+| `UseCases.Tests` | 78 | Handlers com repositórios em mock |
+| `WebApi.Tests` | 56 | HTTP de ponta a ponta contra SQL Server real |
+| **Total** | **247** | |
 
 Os testes de integração usam [Testcontainers](https://testcontainers.com/): cada
 execução sobe um SQL Server descartável e roda as migrations nele. Não há banco
