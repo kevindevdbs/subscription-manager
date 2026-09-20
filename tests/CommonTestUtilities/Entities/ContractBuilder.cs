@@ -5,12 +5,12 @@ namespace CommonTestUtilities.Entities;
 
 public class ContractBuilder
 {
-    public static Contract Build(Guid? customerId = null, Guid? planId = null)
+    public static Contract Build(Guid? customerId = null, Guid? planId = null, DateTime? startDate = null)
     {
         return new Faker<Contract>()
             .CustomInstantiator(faker => new Contract(
                 customerId ?? Guid.NewGuid(),
                 planId ?? Guid.NewGuid(),
-                faker.Date.Recent()));
+                startDate ?? faker.Date.Recent()));
     }
 }

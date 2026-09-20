@@ -124,4 +124,52 @@ public class ContractTests
 
         Should.Throw<ConflictException>(() => contract.Reactivate());
     }
+
+    [Fact]
+    public void IsBillableIn_MonthTheContractStarts_ReturnsFalse()
+    {
+        var contract = new Contract(Guid.NewGuid(), Guid.NewGuid(), new DateTime(2026, 9, 20));
+
+        contract.IsBillableIn(new DateTime(2026, 9, 1)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void IsBillableIn_MonthAfterTheContractStarts_ReturnsTrue()
+    {
+        var contract = new Contract(Guid.NewGuid(), Guid.NewGuid(), new DateTime(2026, 9, 20));
+
+        contract.IsBillableIn(new DateTime(2026, 10, 1)).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IsBillableIn_MonthBeforeTheContractStarts_ReturnsFalse()
+    {
+        var contract = new Contract(Guid.NewGuid(), Guid.NewGuid(), new DateTime(2026, 9, 1));
+
+        contract.IsBillableIn(new DateTime(2026, 8, 31)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void DueDateFor_ReturnsTheSameDayTheContractStarted()
+    {
+        var contract = new Contract(Guid.NewGuid(), Guid.NewGuid(), new DateTime(2026, 9, 15));
+
+        contract.DueDateFor(new DateTime(2026, 11, 1)).ShouldBe(new DateTime(2026, 11, 15));
+    }
+
+    [Fact]
+    public void DueDateFor_ShorterMonth_ReturnsItsLastDay()
+    {
+        var contract = new Contract(Guid.NewGuid(), Guid.NewGuid(), new DateTime(2026, 1, 31));
+
+        contract.DueDateFor(new DateTime(2026, 2, 1)).ShouldBe(new DateTime(2026, 2, 28));
+    }
+
+    [Fact]
+    public void DueDateFor_IgnoresTheDayOfTheReferenceMonth()
+    {
+        var contract = new Contract(Guid.NewGuid(), Guid.NewGuid(), new DateTime(2026, 9, 5));
+
+        contract.DueDateFor(new DateTime(2026, 11, 23)).ShouldBe(new DateTime(2026, 11, 5));
+    }
 }

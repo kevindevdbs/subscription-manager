@@ -53,7 +53,9 @@ public static class DatabaseInitializer
 
         context.Customers.AddRange(kevin, marina, rafael);
 
-        var startDate = new DateTime(DateTime.UtcNow.Year, 1, 1);
+        // Dezembro do ano anterior: o mês da assinatura não é cobrado, então os
+        // contratos já entram valendo para a primeira competência de janeiro.
+        var startDate = new DateTime(DateTime.UtcNow.Year - 1, 12, 10);
 
         var kevinAcademia = new Contract(kevin.Id, academia.Id, startDate);
         var kevinBasico = new Contract(kevin.Id, basico.Id, startDate);
@@ -88,20 +90,22 @@ public static class DatabaseInitializer
         DateTime referenceMonth,
         InvoiceOutcome outcome)
     {
+        var dueDate = contract.DueDateFor(referenceMonth);
+
         // Money novo: a instância do plano é owned entity rastreada, não pode ter dois donos.
         var invoice = new Invoice(
             contract.Id,
             new Money(plan.MonthlyPrice.Amount),
-            referenceMonth.AddDays(9),
+            dueDate,
             referenceMonth);
 
         switch (outcome)
         {
             case InvoiceOutcome.Paid:
-                invoice.Pay(referenceMonth.AddDays(5));
+                invoice.Pay(dueDate.AddDays(-2));
                 break;
             case InvoiceOutcome.Overdue:
-                invoice.MarkAsOverdue(referenceMonth.AddDays(20));
+                invoice.MarkAsOverdue(dueDate.AddDays(10));
                 break;
             case InvoiceOutcome.Cancelled:
                 invoice.Cancel();

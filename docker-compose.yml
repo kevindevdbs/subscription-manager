@@ -11,11 +11,15 @@ services:
     volumes:
       - sqlserver_data:/var/opt/mssql
     healthcheck:
-      # O SQL Server leva alguns segundos até aceitar conexão.
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
-      interval: 10s
+      # Aceitar conexão não basta: numa subida com volume já existente, o servidor
+      # responde antes de terminar de recuperar o banco da aplicação, e a API acha
+      # que ele não existe e tenta criá-lo. Quando o banco ainda não foi recuperado,
+      # DATABASEPROPERTYEX devolve NULL e o healthcheck continua vermelho. Na
+      # primeira subida o banco ainda não existe, e aí só o servidor é verificado.
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -b -Q \"IF DB_ID('subscriptionmanager') IS NOT NULL AND DATABASEPROPERTYEX('subscriptionmanager','Collation') IS NULL RAISERROR('banco ainda em recuperacao', 16, 1) ELSE SELECT 1\" || exit 1"]
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 20s
 
   api:

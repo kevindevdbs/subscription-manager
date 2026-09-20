@@ -5,7 +5,7 @@ sistema emite as faturas mensais e controla o ciclo de vida de contratos e
 faturas até o pagamento, o vencimento ou o cancelamento.
 
 Construída em **.NET 10** com Clean Architecture, EF Core e SQL Server.
-**251 testes**, incluindo integração real contra banco em container.
+**247 testes**, incluindo integração real contra banco em container.
 
 ---
 
@@ -24,7 +24,8 @@ massa de demonstração. Quando terminar, abra:
 
 A base já vem com 4 planos (um deles descontinuado), 3 clientes, 4 contratos (um
 suspenso) e 3 meses de faturas em estados diferentes — dá para exercitar os
-filtros e as transições sem cadastrar nada antes.
+filtros e as transições sem cadastrar nada antes. Logo na subida, uma rotina de
+faturamento em segundo plano emite as faturas do mês corrente e marca as vencidas.
 
 Para derrubar tudo, incluindo o volume do banco:
 
@@ -43,6 +44,14 @@ dotnet run --project src/SubscriptionManager.Api
 Nesse caminho as migrations não são aplicadas na subida e não há seed — o banco
 começa vazio.
 
+### Front-end
+
+Há um painel em Next.js em [`web/`](web/) para operar a API pela tela — clientes,
+planos, contratos e faturas, com as transições de cada um. Ele lê por Server
+Components e escreve por Server Actions, falando com a API de servidor para
+servidor, sem CORS nem biblioteca de cache. Com a stack no ar, veja
+[`web/README.md`](web/README.md).
+
 ---
 
 ## Testes
@@ -53,11 +62,11 @@ dotnet test
 
 | Projeto | Testes | O que cobre |
 |---|---:|---|
-| `SubscriptionManager.Domain.Tests` | 66 | Invariantes das entidades e do value object `Money` |
-| `Validators.Tests` | 44 | Regras do FluentValidation |
-| `UseCases.Tests` | 82 | Handlers com repositórios em mock |
-| `WebApi.Tests` | 59 | HTTP de ponta a ponta contra SQL Server real |
-| **Total** | **251** | |
+| `SubscriptionManager.Domain.Tests` | 72 | Invariantes das entidades e do value object `Money` |
+| `Validators.Tests` | 41 | Regras do FluentValidation |
+| `UseCases.Tests` | 78 | Handlers com repositórios em mock |
+| `WebApi.Tests` | 56 | HTTP de ponta a ponta contra SQL Server real |
+| **Total** | **247** | |
 
 Os testes de integração usam [Testcontainers](https://testcontainers.com/): cada
 execução sobe um SQL Server descartável e roda as migrations nele. Não há banco
@@ -172,9 +181,8 @@ Regras que o modelo garante:
 |---|---|---|
 | `POST` | `/api/invoices/generate` | Emite as faturas da competência — `{ referenceMonth }` |
 | `GET` | `/api/invoices` | Lista com filtro `?status=&month=yyyy-MM` |
-| `POST` | `/api/invoices/mark-overdue` | Marca em lote as vencidas — `{ referenceDate? }` |
+| `POST` | `/api/invoices/mark-overdue` | Marca em lote as vencidas até ontem, pelo relógio do servidor |
 | `PATCH` | `/api/invoices/{id}/pay` | Paga — corpo `{ paidAt? }` |
-| `PATCH` | `/api/invoices/{id}/overdue` | Marca vencida — corpo `{ referenceDate? }` |
 | `PATCH` | `/api/invoices/{id}/refund` | Estorna |
 | `PATCH` | `/api/invoices/{id}/cancel` | Cancela |
 
@@ -227,10 +235,37 @@ emitida. Isso saiu da correção de um bug: `Money` é *owned entity* do plano e
 fatura, e compartilhar a instância rastreada quebrava o `SaveChanges` assim que
 dois contratos ativos usavam o mesmo plano.
 
+**O healthcheck espera o banco, não o servidor.** Numa subida com o volume já
+existente, o SQL Server aceita conexão alguns segundos antes de terminar de
+recuperar o banco da aplicação. Nessa janela, o EF Core pergunta se o banco existe,
+não consegue abri-lo, conclui que não existe e manda `CREATE DATABASE` — que falha
+porque ele existe. Medindo, a janela foi de 16 segundos. O healthcheck agora só fica
+verde quando o banco está recuperado, e continua funcionando na primeira subida,
+quando ele ainda não existe.
+
 **Migration na subida é exceção, não padrão.** O `docker compose` liga
 `Database__MigrateOnStartup` para o projeto ficar utilizável com um comando. Fora
 dele o padrão é desligado, porque em ambiente real migration é passo de deploy —
 várias instâncias subindo juntas tentariam migrar o mesmo banco ao mesmo tempo.
+
+**Emissão e vencimento rodam sozinhos, e a data vem do relógio.** Uma rotina de
+faturamento em segundo plano (`BackgroundService` com `PeriodicTimer`) emite as
+faturas do mês corrente e, na sequência, marca as vencidas — uma vez na subida e
+depois a cada 24 horas. A ordem importa e é o motivo de ser um job só: varrer
+depois de gerar faz uma fatura recém-emitida com vencimento já passado vencer no
+mesmo ciclo, em vez de esperar o próximo. Os dois passos são idempotentes: a
+emissão pula contrato que já tem fatura na competência e a varredura só alcança
+fatura pendente, então repetir a rotina não duplica nem estraga nada. A varredura
+também não aceita data de quem chama — quando aceitava, bastava mandar 2099 para
+vencer todas as faturas de uma vez.
+
+**O ciclo de cobrança conta do dia da assinatura, não de um dia fixo do mês.** As
+faturas da competência são emitidas no dia 1º e vencem no mesmo dia do mês em que o
+contrato foi assinado; quem assina dia 15 de setembro recebe a primeira fatura em 1º
+de outubro, vencendo em 15 de outubro. O mês da assinatura não é cobrado, e é isso
+que evita a fatura que nasce vencida: com vencimento fixo no dia 10, todo contrato
+assinado depois do dia 10 já ganhava uma fatura vencida. Contrato assinado no dia 31
+vence no último dia dos meses mais curtos, em vez de escorregar para o mês seguinte.
 
 ---
 
@@ -239,8 +274,8 @@ várias instâncias subindo juntas tentariam migrar o mesmo banco ao mesmo tempo
 Consciente, não esquecido:
 
 - **Autenticação e autorização.** A API é aberta.
-- **Agendamento.** `generate` e `mark-overdue` existem como endpoint, mas nada os
-  chama sozinho — falta um hosted service ou cron.
+- **Horário fixo dos jobs.** Eles contam o intervalo a partir da subida da API, e
+  não rodam num horário marcado do relógio.
 - **Régua de cobrança.** `Overdue` e `Suspended` existem e a geração já pula
   contrato suspenso, mas nada liga automaticamente um ao outro (vencer → lembrar
   → suspender → cancelar).

@@ -87,38 +87,6 @@ public class InvoiceTransitionTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Overdue_Success()
-    {
-        var invoice = await CreateInvoice(new DateTime(2028, 4, 1));
-
-        var request = new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(1));
-
-        var response = await Patch($"/api/invoices/{invoice.Id}/overdue", request);
-
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-
-        using var json = await ReadJson(response);
-
-        json.RootElement.GetProperty("status").GetString().ShouldBe("Overdue");
-    }
-
-    [Fact]
-    public async Task Overdue_ShouldKeepItPending_WhenTheDueDateHasNotPassedYet()
-    {
-        var invoice = await CreateInvoice(new DateTime(2028, 5, 1));
-
-        var request = new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(-1));
-
-        var response = await Patch($"/api/invoices/{invoice.Id}/overdue", request);
-
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-
-        using var json = await ReadJson(response);
-
-        json.RootElement.GetProperty("status").GetString().ShouldBe("Pending");
-    }
-
-    [Fact]
     public async Task Refund_Success()
     {
         var invoice = await CreateInvoice(new DateTime(2028, 6, 1));
@@ -178,17 +146,17 @@ public class InvoiceTransitionTests : BaseIntegrationTest
         errors.ShouldContain("A fatura não está em um estado válido para ser cancelada.");
     }
 
-    // A varredura é global: pega toda fatura pendente vencida do banco, que é
-    // compartilhado pela suíte. Por isso os testes de lote usam meses anteriores
-    // a 2027 — o resto da suíte só trabalha de 2027 em diante, então nenhuma
-    // varredura daqui alcança a fatura de outro teste, em qualquer ordem.
+    // A varredura é global e usa o relógio fixo da factory, 1º de janeiro de 2026:
+    // pega toda fatura pendente do banco com vencimento antes dessa data. Por isso
+    // o que deve vencer aqui usa meses de 2018 a 2020, e qualquer fatura de 2026
+    // em diante, de qualquer teste, fica fora do alcance, em qualquer ordem.
 
     [Fact]
     public async Task MarkOverdue_ShouldSweepEveryPendingInvoiceAlreadyDue()
     {
         var invoice = await CreateInvoice(new DateTime(2018, 1, 1));
 
-        var response = await Post("/api/invoices/mark-overdue", new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(1)));
+        var response = await Post("/api/invoices/mark-overdue");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
@@ -207,9 +175,9 @@ public class InvoiceTransitionTests : BaseIntegrationTest
     [Fact]
     public async Task MarkOverdue_ShouldLeaveInvoicesThatAreNotDueYet()
     {
-        var invoice = await CreateInvoice(new DateTime(2019, 1, 1));
+        var invoice = await CreateInvoice(new DateTime(2026, 6, 1));
 
-        var response = await Post("/api/invoices/mark-overdue", new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(-1)));
+        var response = await Post("/api/invoices/mark-overdue");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
@@ -231,7 +199,7 @@ public class InvoiceTransitionTests : BaseIntegrationTest
 
         await Patch($"/api/invoices/{invoice.Id}/pay", new PayInvoiceRequest(invoice.DueDate));
 
-        var response = await Post("/api/invoices/mark-overdue", new MarkInvoiceAsOverdueRequest(invoice.DueDate.AddDays(1)));
+        var response = await Post("/api/invoices/mark-overdue");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
@@ -244,18 +212,6 @@ public class InvoiceTransitionTests : BaseIntegrationTest
             .GetProperty("status")
             .GetString()
             .ShouldBe("Paid");
-    }
-
-    [Fact]
-    public async Task MarkOverdue_ShouldReturnBadRequest_WhenReferenceDateIsInformedButEmpty()
-    {
-        var response = await Post("/api/invoices/mark-overdue", new MarkInvoiceAsOverdueRequest(default(DateTime)));
-
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-
-        var errors = await ReadErrors(response);
-
-        errors.ShouldContain("A data de referência é inválida.");
     }
 
     /// <summary>
@@ -272,7 +228,8 @@ public class InvoiceTransitionTests : BaseIntegrationTest
         using var planJson = await ReadJson(planResponse);
         var planId = planJson.RootElement.GetProperty("id").GetGuid();
 
-        var contractResponse = await Post("/api/contracts", new CreateContractRequest(customerId, planId, referenceMonth));
+        // Assinatura no mês anterior: o mês em que o contrato começa não é faturado.
+        var contractResponse = await Post("/api/contracts", new CreateContractRequest(customerId, planId, referenceMonth.AddMonths(-1)));
         using var contractJson = await ReadJson(contractResponse);
         var contractId = contractJson.RootElement.GetProperty("id").GetGuid();
 

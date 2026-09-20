@@ -22,7 +22,7 @@ public abstract class BaseIntegrationTest : IDisposable
         DbContext = _scope.ServiceProvider.GetRequiredService<AppDbContext>();
     }
 
-    protected async Task<HttpResponseMessage> Post(string requestUri, object request)
+    protected async Task<HttpResponseMessage> Post(string requestUri, object? request = null)
     {
         return await _httpClient.PostAsJsonAsync(requestUri, request);
     }
